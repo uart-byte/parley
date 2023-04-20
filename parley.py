@@ -4,6 +4,11 @@
 # This scenario is partly inspired by the Firefly episode "The Train Job"
 # Specifically, the idea that pirates might have compassion if they know what they are stealing is much-needed medicine in excess of what they need for their own wounds
 
+import time, os, openai
+openai.organization = os.environ.get("OPENAI_ORGANIZATION")
+openai.api_key = os.environ.get("OPENAI_KEY")
+
+
 
 class Faction:
     def __init__(
@@ -53,8 +58,11 @@ class EquippableItem:
         consumes_medicine=False,
     ):
         self.name = name
-        self.effect = effect
+        self.requires_close_proximity = requires_close_proximity
+        self.chance_of_hit_pct = chance_of_hit_pct
+        self.effect_on_hp = effect_on_hp
         self.n_charges = n_charges
+        self.consumes_medicine = consumes_medicine
 
 
 PISTOL = EquippableItem(
@@ -288,7 +296,23 @@ def ui(s=""):
     print(s)
 
 
-def main():
+DEFAULT_TIMED_ACTION_LIMIT=30
+
+def timed_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
+    ui(f"You have {limit_sec} seconds.")
+    ui("Choose your move:")
+    start_t = time.time()
+    player_cmd = input()
+    end_t = time.time()
+    if end_t > start_t + limit_sec:
+        ui("You failed to type fast enough.  You will do nothing.")
+        return None
+    else:
+        return player_cmd
+
+    
+
+def main(start_with_practice_turns=True):
     global g_on_screen_transcript
     global g_characters
 
@@ -324,7 +348,22 @@ def main():
             player_ch = playables[int(inp)]
             break
         ui("Invalid selection.")
+    ui()
+
+    if start_with_practice_turns:
+        ui('Throughout this game, there will be "timed actions" which means that you have a limited number of seconds to provide an input,')
+        ui('and if you take too long to respond, you will be considered to have taken no action.')
+        ui()
+        ui("Let's try a practice timed action.  You will be given five chances to investigate your surroundings before the game begins.")
+        ui("Try typing fast sometimes (to complete the timed action) and also try failing to type fast enough.")
+        for nth in ["1st", "2nd", "3rd", "4th", "5th"]:
+            ui()
+            ui(f"This is your {nth} practice turn.")
+            ui('Try saying "inventory" or "look around".')
+            action = timed_action(limit_sec=10)
+        ui()
+
 
 
 if __name__ == "__main__":
-    main()
+    main(start_with_practice_turns=False)
