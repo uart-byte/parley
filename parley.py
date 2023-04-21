@@ -12,8 +12,9 @@ import openai
 openai.organization = os.environ.get("OPENAI_ORGANIZATION")
 openai.api_key = os.environ.get("OPENAI_KEY")
 
+
 def escape_quotes_etc(s):
-  return s.replace('"', "'").replace(':', '').replace('\n', ' ').replace('{', '(').replace('}', ')')
+    return s.replace('"', "'").replace(":", "").replace("\n", " ").replace("{", "(").replace("}", ")")
 
 
 class Ship:
@@ -54,15 +55,15 @@ class Ship:
         [Begin Vehicle Stat Sheet]
           Name: {self.name}
           Nationality: {self.country_of_most_of_crew_citizenship}
-          Ship HP: {self.ship_hp}
-          Gold carried aboard: {self.loot_carried_aboard_gold_coins} gold coins
-          Medicine carried aboard: {self.loot_carried_aboard_gold_coins} gold coins' worth of medicine going by the official prices, but medicine goes for about 100x as much on the black market which would be {100 * self.loot_carried_aboard_gold_coins} gold coins' worth
+          Ship HP: {self.ship_hp:,}
+          Gold carried aboard: {self.loot_carried_aboard_gold_coins:,} gold coins
+          Medicine carried aboard: {self.loot_carried_aboard_gold_coins:,} gold coins' worth of medicine going by the official prices, but medicine goes for about 100x as much on the black market which would be {(100 * self.loot_carried_aboard_gold_coins):,} gold coins' worth
           Cannons: {2 * self.cannons_per_broadside}, of which there are {self.cannons_per_broadside} per side
         [End Vehicle Stat Sheet]
-        """.splitlines() if line != ""
+        """.splitlines()
+                if line != ""
             ]
         )
-
 
 
 LOCATION_SAME_AS_FACTION_STARTING_PLACE = "::LOCATION_SAME_AS_FACTION_STARTING_PLACE::"
@@ -192,9 +193,10 @@ class Character:
           HP: {self.hp}
           Inventory: {", ".join([str(item) for item in self.equipment])}
           Location: {self.location_ship_currently_aboard}
-          Ship: {self.faction}
+          Nationality: {self.faction.country_of_most_of_crew_citizenship}
         [End Character Sheet]
-        """.splitlines() if line != ""
+        """.splitlines()
+                if line != ""
             ]
         )
 
@@ -351,6 +353,9 @@ g_characters = [
 
 
 g_on_screen_transcript = ""
+DEBUG_TRANSCRIPT_FILE = "transcript.debug.txt"
+g_debug_transcript_file_handle = open(DEBUG_TRANSCRIPT_FILE, "w")
+g_debug_transcript_file_handle.flush()
 
 # ui() means print only to screen.  It has a slow printing effect
 def ui(s=""):
@@ -361,12 +366,16 @@ def ui(s=""):
     print()
     sys.stdout.flush()
 
-# p() means print to screen and transcript.  It also has a slow printing effect
-def p(s=""):
+def manually_add_to_transcript(s=""):
     global g_on_screen_transcript
     g_on_screen_transcript += s + "\n"
-    ui(s)
+    g_debug_transcript_file_handle.write(s + "\n")
+    g_debug_transcript_file_handle.flush()
 
+# p() means print to screen and transcript.  It has a slow printing effect
+def p(s=""):
+    manually_add_to_transcript(s)
+    ui(s)
 
 
 def look_around():
@@ -376,9 +385,9 @@ def look_around():
     ship_idx = 1
     for ship in g_ships:
         n_dead_on_ship = 0
-        s += f"\n{ship_idx}. {ship}\n"
+        s += f"\n{ship_idx}. {ship}\n...\n"
         s += f"{ship.str_verbose()}"
-        s += "On board this ship are:\n"
+        s += "...\nOn board this ship are:\n"
         for ch in g_characters:
             if ch.location_ship_currently_aboard == ship:
                 if ch.hp > 0:
@@ -395,7 +404,6 @@ def look_around():
     return s
 
 
-
 CMD_DO_NOTHING = 0
 CMD_LOOK_AROUND = 1
 CMD_MELEE_ATTACK = 2
@@ -406,7 +414,9 @@ CMD_GRAPPLE_OVER_TO_SHIP = 6
 CMD_APPLY_MEDICINE = 7
 CMD_SPEAK = 8
 CMD_INVENTORY = 9
-NUMBER_OF_HIGHEST_LEGAL_CMD = 9
+CMD_GIVE_GOLD_TO = 10
+CMD_GIVE_MEDICINE_CARGO_TO = 11
+NUMBER_OF_HIGHEST_LEGAL_CMD = 11
 LEGAL_COMMANDS = f"""
 CMD={CMD_DO_NOTHING}: DO NOTHING | PASS | WAIT | STOP | HOLD YOUR FIRE | CEASE FIRE
 CMD={CMD_LOOK_AROUND}: LOOK AROUND | SURVEY | LOOK AT MY SHIP | LOOK AT THE PIRATE SHIP | LOOK AT THE OTHER SHIP
@@ -417,8 +427,11 @@ CMD={CMD_FIRE_CANNONS}: FIRE CANNONS | USE THE CANNONS
 CMD={CMD_GRAPPLE_OVER_TO_SHIP}: BOARD SHIP | JUMP ABOARD | GRAPPLE | SWING TO | LEAP ABOARD | BOARD THE ENEMY SHIP
 CMD={CMD_APPLY_MEDICINE}: APPLY MEDICINE TO | HEAL
 CMD={CMD_SPEAK}: SAY | YELL | SPEAK | SHOUT | TELL | RESPOND
-CMD={CMD_INVENTORY}: INVENTORY | LOOK AT SELF
+CMD={CMD_INVENTORY}: INVENTORY | LOOK AT SELF | LOOK AT MY CHARACTER SHEET | PULL UP MY CHARACTER SHEET
+CMD={CMD_GIVE_GOLD_TO}: HAND OVER THE GOLD | GIVE HIM THE GOLD | GIVE MY GOLD TO HER
+CMD={CMD_GIVE_MEDICINE_CARGO_TO}: HAND OVER THE CARGO OF MEDICINE | GIVE THEM ALL OF OUR MEDICINE
 """
+
 
 def get_closest_legal_cmd(avatar_action_str):
     # The avator might be human-driven or bot-driven
@@ -433,13 +446,7 @@ def get_closest_legal_cmd(avatar_action_str):
     prompt += "\nWhich of those legal commands, if any, is the following user command most similar to?\n"
     prompt += f'"{escape_quotes_etc(avatar_action_str)}"\n'
     prompt += 'Answer: "CMD='
-    maybe_cmd_str = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=prompt,
-        temperature=0,
-        max_tokens=5,
-        frequency_penalty=0, presence_penalty=0,
-        n=1)["choices"][0]["text"]
+    maybe_cmd_str = openai.Completion.create(engine="text-davinci-002", prompt=prompt, temperature=0, max_tokens=5, frequency_penalty=0, presence_penalty=0, n=1)["choices"][0]["text"]
     maybe_cmd_str = maybe_cmd_str.rstrip('"')  # the davinci 002 bot should respond with something like '7"', which has a trailing quote
     maybe_cmd = 0
     if maybe_cmd_str.isnumeric():
@@ -448,9 +455,10 @@ def get_closest_legal_cmd(avatar_action_str):
     return maybe_cmd
 
 
-
 DEFAULT_TIMED_ACTION_LIMIT = 30
 NO_TIME_LIMIT = None
+
+
 def player_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
     if limit_sec != NO_TIME_LIMIT:
         ui(f"You have {limit_sec} seconds.")
@@ -465,7 +473,6 @@ def player_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
         return get_closest_legal_cmd(player_cmd_str), player_cmd_str
 
 
-
 def main(force_character_select=None):
     global g_ships, g_characters, g_on_screen_transcript
 
@@ -476,7 +483,7 @@ def main(force_character_select=None):
     p("-   The one-of-a-kind role playing game -")
     p("-   that tests your ability to achieve  -")
     p("-   your objective without killing      -")
-    p("-   any human or sentient enemies.      -")
+    p("-   any sentient beings.                -")
     p("- -----                                 -")
     p("-------------- --------------------------")
     p()
@@ -505,8 +512,7 @@ def main(force_character_select=None):
         ui("Invalid selection.")
     ui()
 
-    p("You have selected to play as:\n" + player_ch.str_verbose())
-
+    ui(f"You have selected to play as: {player_ch}\n")
 
     ui('Throughout this game, there will be "timed actions" which means that you have a limited number of seconds to provide an input,')
     ui("and if you take too long to respond, you will be considered to have taken no action.")
@@ -519,11 +525,23 @@ def main(force_character_select=None):
         ui("Try looking around you.")
         cmd, cmd_str = player_action(limit_sec=10)
     ui()
-    p(look_around())
-    
-    # while True:
-    #     inp = input()
-    #     ui(get_closest_legal_cmd(inp))
+    ui(look_around())
+
+    manually_add_to_transcript(look_around())
+
+    ui("Okay, now let's look at your player character sheet.")
+    cmd = 0
+    while cmd != CMD_INVENTORY:
+        ui()
+        ui("Try checking your inventory.")
+        cmd, cmd_str = player_action(limit_sec=10)
+    ui()
+    ui(player_ch.str_verbose())
+
+    while True:
+        inp = input()
+        cmd, cmd_str = get_closest_legal_cmd(inp)
+
 
 if __name__ == "__main__":
     main()
