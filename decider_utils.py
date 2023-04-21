@@ -7,6 +7,9 @@ NO = False
 
 def yesno(question, text, default):
     prompt = text + "\n\n" + question
+    debug_print()
+    debug_print()
+    debug_print(prompt)
     hopefully_word_yes_or_no = openai.Completion.create(
         engine="text-davinci-002",
         prompt=prompt,

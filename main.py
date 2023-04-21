@@ -25,7 +25,10 @@ def choose_scenario():
     scenarios = [file for file in ls if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)]
     scenario_numbers = [int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, "")) for file in scenarios]
     scenario_numbers = sorted(scenario_numbers)
-    new_scenario = scenario_numbers[-1] + 1
+
+    new_scenario = 1
+    if len(scenario_numbers) > 0:
+        new_scenario = scenario_numbers[-1] + 1
 
     selected = None
 
