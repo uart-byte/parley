@@ -46,7 +46,8 @@ QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist locat
 QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story, does the protagonist still have at least 30 gold pieces?"
 QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
 QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
-QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running/sneaking away?"
+QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
+QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
 QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
@@ -143,7 +144,7 @@ def main():
     p(
         load_or_generate_canon(
             scenario_introduction_file,
-            "The year is 603, in an alternate reality fantasy world with a little bit of magic.  "
+            "The year is 603, in an alternate reality fantasy world with a little bit of magic, although you yourself cannot cast spells and the only magical item you own is your revolver.  "
             + "Magically-powered firearms are common, especially six-shooter revolvers, which you and almost everyone carries.  "
             + "You are a seasonal laborer making a once a year summer trek from Tibet across the Himalayas to Nepal to return home "
             + "to your family with your year's worth of wages which is 100 gold coins.  "
@@ -153,6 +154,12 @@ def main():
             require_user_to_be_still_engaged_with_bandits=True,
         )
     )
+
+    manually_add_to_transcript()
+    manually_add_to_transcript("IMPORTANT NOTES TO THE NARRATOR:")
+    manually_add_to_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
+    manually_add_to_transcript("ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
+    manually_add_to_transcript()
 
     n_turns_elapsed = 0
 
@@ -167,15 +174,18 @@ def main():
         if is_lethal_action:
             return game_over_fail("You have taken an action that is likely to result in killing someone.")
 
-        # # I'm turning off this rule because it gives a false positive every time the user tries a movement action.
-        # is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
-        # if is_running_away:
-        #     p("You attempt to evade but the bandits are skilled and they cut off your path of escape.")
+        is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
+        if is_running_away:
+            p("Invalid entry.  You cannot outrun these bandits.")
+            continue
 
-        manually_add_to_transcript("IMPORTANT NOTES TO THE NARRATOR:")
-        manually_add_to_transcript("MAGIC (SUCH AS INVISIBILITY OR FLIGHT SPELLS) WILL USUALLY WORK BUT WILL WEAR OFF AFTER JUST A FEW SECONDS.")
-        manually_add_to_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
-        manually_add_to_transcript("ATTEMPTS TO REACH HOME WILL ALMOST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
+        is_using_magic = decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO)
+        if is_using_magic:
+            p("Invalid entry.  You are not a spellcaster and have no magic items except your revolver.")
+            continue
+
+        manually_add_to_transcript()
+        manually_add_to_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
 
         full_transcript = read_global_transcript()
         new_full_transcript = elaborate(full_transcript,
