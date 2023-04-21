@@ -179,8 +179,8 @@ def main():
 
         full_transcript = read_global_transcript()
         new_full_transcript = elaborate(full_transcript,
-            prevent_user_from_reaching_home= n_turns_elapsed >= N_TURNS_REQUIRED_TO_REACH_HOME, 
-            require_user_to_be_still_engaged_with_bandits= n_turns_elapsed >= N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER)
+            prevent_user_from_reaching_home= n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME, 
+            require_user_to_be_still_engaged_with_bandits= n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER)
         new_part = new_full_transcript.replace(full_transcript, "")
 
         p(new_part)
