@@ -32,12 +32,13 @@ def choose_scenario():
         ui("Choose a scenario:")
         for number in scenario_numbers:
             ui(f'[{number}] {SCENARIO_FILE_PREFIX}{number}{SCENARIO_FILE_SUFFIX}')
-        ui(f'[{number}] Create New Scenario')
+        ui(f'[{new_scenario}] Create New Scenario')
         selected = int(input())
 
-    return f'{SCENARIO_FILE_PREFIX}{number}{SCENARIO_FILE_SUFFIX}'
+    return f'{SCENARIO_FILE_PREFIX}{selected}{SCENARIO_FILE_SUFFIX}'
 
 N_COMPLETIONS_WHEN_ELABORATING = 2
+MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 25
 
 def elaborate(str_beginning, prevent_user_from_reaching_home=True):
     completions = openai.Completion.create(
@@ -52,7 +53,7 @@ def elaborate(str_beginning, prevent_user_from_reaching_home=True):
 
     longest_completion = ""
 
-    while longest_completion != "":
+    while len(longest_completion) < MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING:
         for i in range(0, N_COMPLETIONS_WHEN_ELABORATING):
             completion = completions[i]["text"]
             debug_print(completion)
@@ -86,6 +87,19 @@ def main():
     openai.organization = os.environ.get("OPENAI_ORGANIZATION")
     openai.api_key = os.environ.get("OPENAI_KEY")
 
+    p()
+    p("-----------------------------------  -------------------")
+    p("- ----- -----                                          -")
+    p("- PARLEY -                                             -")
+    p("- -----                                                -")
+    p("-   The one-of-a-kind role playing game                -")
+    p("-   that tests your ability to achieve                 -")
+    p("-   your objective without killing                     -")
+    p("-   any sentient beings.                               -")
+    p("- -----                                                -")
+    p("-------------- ------------------------------- ------- -")
+    p()
+
     scenario_introduction_file = choose_scenario()
 
     p(
@@ -101,24 +115,9 @@ def main():
         )
     )
 
-    p()
-    p()
-    p("-----------------------------------  ----")
-    p("- ----- -----                           -")
-    p("- PARLEY -                              -")
-    p("- -----                                 -")
-    p("-   The one-of-a-kind role playing game -")
-    p("-   that tests your ability to achieve  -")
-    p("-   your objective without killing      -")
-    p("-   any sentient beings.                -")
-    p("- -----                                 -")
-    p("-------------- --------------------------")
-    p()
 
 
 if __name__ == "__main__":
     if "--print-fast" in sys.argv[1:]:
         set_slow_print_enabled(False)
-    import ipdb
-    ipdb.set_trace()
     main()

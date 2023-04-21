@@ -28,5 +28,5 @@ def yesno(question, text, default):
         if hopefully_word_yes_or_no.startswith("Y"):
             result = YES
 
-    debug_print("Returning " + result)
+    debug_print(f"Returning {result}")
     return result
