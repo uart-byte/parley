@@ -47,6 +47,7 @@ QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story,
 QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
 QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
 QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running/sneaking away?"
+QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
