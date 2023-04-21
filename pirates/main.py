@@ -445,7 +445,6 @@ def main(force_character_select=None):
 
 
 if __name__ == "__main__":
-    global g_yes_print_slowly
     if "--print-fast" in sys.argv[1:]:
         set_slow_print_enabled(False)
     main()
