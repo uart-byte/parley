@@ -8,112 +8,11 @@
 
 import time, os, sys
 import openai
+from class_ship import Ship
+from class_equippable_item import PISTOL, CUTLASS, MEDICAL_SATCHEL
+from class_character import Character, LOCATION_SAME_AS_FACTION_STARTING_PLACE
+from transcript_management import ui, p, manually_add_to_transcript, escape_quotes_etc, set_slow_print_enabled
 
-openai.organization = os.environ.get("OPENAI_ORGANIZATION")
-openai.api_key = os.environ.get("OPENAI_KEY")
-
-
-def escape_quotes_etc(s):
-    return s.replace('"', "'").replace(":", "").replace("\n", " ").replace("{", "(").replace("}", ")")
-
-
-class Ship:
-    def __init__(
-        self,
-        name,
-        country_of_most_of_crew_citizenship,
-        ship_hp=1_000,
-        cannons_per_broadside=0,
-        n_turns_to_engage_new_opponent_with_cannons=5,
-        n_boarding_grapples_expendable=1,
-        loot_carried_aboard_gold_coins=0,
-        loot_carried_aboard_medicine_equiv_value_in_gold_coins=0,
-    ):
-        self.name = name
-        self.country_of_most_of_crew_citizenship = country_of_most_of_crew_citizenship
-        self.ship_hp = ship_hp
-        self.cannons_per_broadside = cannons_per_broadside
-        self.n_boarding_grapples_expendable = n_boarding_grapples_expendable
-        self.loot_carried_aboard_gold_coins = loot_carried_aboard_gold_coins
-        self.loot_carried_aboard_medicine_equiv_value_in_gold_coins = loot_carried_aboard_medicine_equiv_value_in_gold_coins
-
-        # Conversion rate for the monetary value of medicine:
-        # 1 gold coin's worth of medicine (at prices available ASHORE, and only to a licensed doctor) can treat 1 hp worth of disease
-        # At sea or in black markets, that same 1 hp's worth of medicine might be worth 100 gold coins or so to a desperate buyer.
-        # For the purposes of the variable loot_carried_aboard_medicine_equiv_value_in_gold_coins,
-        # the 1 gold coin = 1 hp official conversion rate is what's used.
-        self.loot_carried_aboard_medicine_equiv_value_in_gold_coins = loot_carried_aboard_medicine_equiv_value_in_gold_coins
-
-    def __str__(self):
-        return f"The good ship {self.name} sailing from {self.country_of_most_of_crew_citizenship}"
-
-    def str_verbose(self):
-        return "\n".join(
-            [
-                line.replace("        ", "")
-                for line in f"""
-        [Begin Vehicle Stat Sheet]
-          Name: {self.name}
-          Nationality: {self.country_of_most_of_crew_citizenship}
-          Ship HP: {self.ship_hp:,}
-          Gold carried aboard: {self.loot_carried_aboard_gold_coins:,} gold coins
-          Medicine carried aboard: {self.loot_carried_aboard_gold_coins:,} gold coins' worth of medicine going by the official prices, but medicine goes for about 100x as much on the black market which would be {(100 * self.loot_carried_aboard_gold_coins):,} gold coins' worth
-          Cannons: {2 * self.cannons_per_broadside}, of which there are {self.cannons_per_broadside} per side
-        [End Vehicle Stat Sheet]
-        """.splitlines()
-                if line != ""
-            ]
-        )
-
-
-LOCATION_SAME_AS_FACTION_STARTING_PLACE = "::LOCATION_SAME_AS_FACTION_STARTING_PLACE::"
-ITEM_DOES_NOT_NEED_CHARGES = -1
-
-
-class EquippableItem:
-    # pct = percent, i.e. range is 0 thru 100
-    def __init__(
-        self,
-        name,
-        requires_close_proximity,
-        chance_of_hit_pct,
-        effect_on_hp,
-        n_charges=ITEM_DOES_NOT_NEED_CHARGES,
-        consumes_medicine=False,
-    ):
-        self.name = name
-        self.requires_close_proximity = requires_close_proximity
-        self.chance_of_hit_pct = chance_of_hit_pct
-        self.effect_on_hp = effect_on_hp
-        self.n_charges = n_charges
-        self.consumes_medicine = consumes_medicine
-
-    def __str__(self):
-        return f"{self.name}"
-
-
-PISTOL = EquippableItem(
-    "Dual-Barrelled Flintlock Pistol",
-    requires_close_proximity=False,
-    chance_of_hit_pct=20,
-    effect_on_hp=-50,
-    n_charges=2,
-)
-CUTLASS = EquippableItem(
-    "Cutlass Sword",
-    requires_close_proximity=True,
-    chance_of_hit_pct=90,
-    effect_on_hp=-50,
-    n_charges=ITEM_DOES_NOT_NEED_CHARGES,
-)
-MEDICAL_SATCHEL = EquippableItem(
-    "Medical Satchel which allows the user to apply consumable medicines",
-    requires_close_proximity=True,
-    chance_of_hit_pct=60,
-    effect_on_hp=+10,
-    n_charges=ITEM_DOES_NOT_NEED_CHARGES,
-    consumes_medicine=True,
-)
 
 HEAVILY_ARMED_FRIENDLY = Ship(
     "Friendly Warship",
@@ -147,58 +46,6 @@ PIRATE = Ship(
 )
 
 g_ships = [HEAVILY_ARMED_FRIENDLY, FRIENDLY_MEDICAL_VESSEL, PIRATE]
-
-
-class Character:
-    # max hp for most characters is 100
-    def __init__(
-        self,
-        name,
-        faction,
-        rank,
-        compassion_pct=50,
-        location_ship_currently_aboard=LOCATION_SAME_AS_FACTION_STARTING_PLACE,
-        hp=100,
-        equipment=[],
-        playable=False,
-        tendency_to_disobey_orders_pct=1,
-        desperation_to_get_paid_for_this_job_pct=10,
-        money_gold_coins=0,
-        untreated_treatable_diseases_penalty_to_hp=0,
-        close_to=[],  # TODO make it possible to be close to people, the helm, or the cannons
-    ):
-        self.name = name
-        self.faction = faction
-        if location_ship_currently_aboard == LOCATION_SAME_AS_FACTION_STARTING_PLACE:
-            self.location_ship_currently_aboard = faction
-        else:
-            self.location_ship_currently_aboard = location_ship_currently_aboard
-        self.rank = rank
-        self.hp = hp
-        self.equipment = equipment
-        self.playable = playable
-        self.tendency_to_disobey_orders_pct = tendency_to_disobey_orders_pct
-        self.desperation_to_get_paid_for_this_job_pct = desperation_to_get_paid_for_this_job_pct
-
-    def __str__(self):
-        return self.name
-
-    def str_verbose(self):
-        return "\n".join(
-            [
-                line.replace("        ", "")
-                for line in f"""
-        [Begin Character Sheet]
-          Name: {self.name}
-          HP: {self.hp}
-          Inventory: {", ".join([str(item) for item in self.equipment])}
-          Location: {self.location_ship_currently_aboard}
-          Nationality: {self.faction.country_of_most_of_crew_citizenship}
-        [End Character Sheet]
-        """.splitlines()
-                if line != ""
-            ]
-        )
 
 
 g_characters = [
@@ -352,32 +199,6 @@ g_characters = [
 ]
 
 
-g_on_screen_transcript = ""
-DEBUG_TRANSCRIPT_FILE = "transcript.debug.txt"
-g_debug_transcript_file_handle = open(DEBUG_TRANSCRIPT_FILE, "w")
-g_debug_transcript_file_handle.flush()
-
-# ui() means print only to screen.  It has a slow printing effect
-def ui(s=""):
-    for letter in s:
-        print(letter, end="")
-        sys.stdout.flush()
-        time.sleep(0.008)
-    print()
-    sys.stdout.flush()
-
-def manually_add_to_transcript(s=""):
-    global g_on_screen_transcript
-    g_on_screen_transcript += s + "\n"
-    g_debug_transcript_file_handle.write(s + "\n")
-    g_debug_transcript_file_handle.flush()
-
-# p() means print to screen and transcript.  It has a slow printing effect
-def p(s=""):
-    manually_add_to_transcript(s)
-    ui(s)
-
-
 def look_around():
     global g_ships, g_characters, g_on_screen_transcript
     s = ""
@@ -476,6 +297,9 @@ def player_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
 def main(force_character_select=None):
     global g_ships, g_characters, g_on_screen_transcript
 
+    openai.organization = os.environ.get("OPENAI_ORGANIZATION")
+    openai.api_key = os.environ.get("OPENAI_KEY")
+
     p("-----------------------------------  ----")
     p("- ----- -----                           -")
     p("- PARLEY -                              -")
@@ -538,10 +362,22 @@ def main(force_character_select=None):
     ui()
     ui(player_ch.str_verbose())
 
+    p("Now it's time to begin the game!")
+    p("Characters will decide their move in alphabetical order by, but all actions happen simultaneously.")
+    p("Thus, if two characters with low HP attack each other in the same turn,")
+    p("the result is that both of them will be struck down.")
+    p("If multiple characters try to speak, they will speak in a random order.")
+    ui()
+    ui("Press Enter when you are ready for the game to begin.")
+    input()
+
     while True:
         inp = input()
         cmd, cmd_str = get_closest_legal_cmd(inp)
 
 
 if __name__ == "__main__":
+    global g_yes_print_slowly
+    if "--print-fast" in sys.argv[1:]:
+        set_slow_print_enabled(False)
     main()
