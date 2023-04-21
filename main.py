@@ -45,20 +45,22 @@ MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 25
 QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
 QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
 
+
 def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=False):
-    completions = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=str_beginning,
-        temperature=0.5,
-        max_tokens=4000 - int(len(str_beginning) / 4),
-        frequency_penalty=0.5,
-        presence_penalty=0.5,
-        n=N_COMPLETIONS_WHEN_ELABORATING,
-    )["choices"]
 
     longest_completion = ""
 
     while len(longest_completion) < MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING:
+        completions = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=str_beginning,
+            temperature=0.5,
+            max_tokens=4000 - int(len(str_beginning) / 4),
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
+            n=N_COMPLETIONS_WHEN_ELABORATING,
+        )["choices"]
+
         for i in range(0, N_COMPLETIONS_WHEN_ELABORATING):
             completion = completions[i]["text"]
             debug_print(completion)
@@ -86,7 +88,9 @@ def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_h
             return canon_text
     else:
         ui("Preparing canon text...")
-        canon_text = elaborate(str_beginning, prevent_user_from_reaching_home=prevent_user_from_reaching_home, require_user_to_be_still_engaged_with_bandits=require_user_to_be_still_engaged_with_bandits)
+        canon_text = elaborate(
+            str_beginning, prevent_user_from_reaching_home=prevent_user_from_reaching_home, require_user_to_be_still_engaged_with_bandits=require_user_to_be_still_engaged_with_bandits
+        )
         with open(filename, "w") as f:
             f.write(canon_text)
         return canon_text
@@ -121,7 +125,7 @@ def main():
             + "It is very common to be waylaid by bandits who will try to steal some of your gold, or to take some of it for 'protection'.  "
             + "If you make it home with less than 30 coins or do not make it home at all, your family will not be able to afford food to eat.",
             prevent_user_from_reaching_home=True,
-            require_user_to_be_still_engaged_with_bandits=True
+            require_user_to_be_still_engaged_with_bandits=True,
         )
     )
 
