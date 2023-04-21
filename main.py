@@ -167,12 +167,15 @@ def main():
         if is_lethal_action:
             return game_over_fail("You have taken an action that is likely to result in killing someone.")
 
-        is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
-        if is_running_away:
-            p("You attempt to evade but the bandits are skilled and they cut off your path of escape.")
+        # # I'm turning off this rule because it gives a false positive every time the user tries a movement action.
+        # is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
+        # if is_running_away:
+        #     p("You attempt to evade but the bandits are skilled and they cut off your path of escape.")
 
-        manually_add_to_transcript("IMPORTANT NOTE TO THE NARRATOR:")
-        manually_add_to_transcript("THE BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
+        manually_add_to_transcript("IMPORTANT NOTES TO THE NARRATOR:")
+        manually_add_to_transcript("MAGIC (SUCH AS INVISIBILITY OR FLIGHT SPELLS) WILL USUALLY WORK BUT WILL WEAR OFF AFTER JUST A FEW SECONDS.")
+        manually_add_to_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
+        manually_add_to_transcript("ATTEMPTS TO REACH HOME WILL ALMOST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
 
         full_transcript = read_global_transcript()
         new_full_transcript = elaborate(full_transcript,
