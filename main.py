@@ -18,9 +18,10 @@ from debug_logger import debug_print
 SCENARIO_FILE_PREFIX = "Intro_"
 SCENARIO_FILE_SUFFIX = ".txt"
 
+
 def choose_scenario():
     # For conciseness, this function does not do error checking
-    ls = os.listdir('.')
+    ls = os.listdir(".")
     scenarios = [file for file in ls if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)]
     scenario_numbers = [int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, "")) for file in scenarios]
     scenario_numbers = sorted(scenario_numbers)
@@ -31,16 +32,20 @@ def choose_scenario():
     while selected not in scenario_numbers + [new_scenario]:
         ui("Choose a scenario:")
         for number in scenario_numbers:
-            ui(f'[{number}] {SCENARIO_FILE_PREFIX}{number}{SCENARIO_FILE_SUFFIX}')
-        ui(f'[{new_scenario}] Create New Scenario')
+            ui(f"[{number}] {SCENARIO_FILE_PREFIX}{number}{SCENARIO_FILE_SUFFIX}")
+        ui(f"[{new_scenario}] Create New Scenario")
         selected = int(input())
 
-    return f'{SCENARIO_FILE_PREFIX}{selected}{SCENARIO_FILE_SUFFIX}'
+    return f"{SCENARIO_FILE_PREFIX}{selected}{SCENARIO_FILE_SUFFIX}"
 
-N_COMPLETIONS_WHEN_ELABORATING = 2
+
+N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 25
 
-def elaborate(str_beginning, prevent_user_from_reaching_home=True):
+QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
+QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
+
+def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=False):
     completions = openai.Completion.create(
         engine="text-davinci-003",
         prompt=str_beginning,
@@ -60,8 +65,12 @@ def elaborate(str_beginning, prevent_user_from_reaching_home=True):
 
             allowed = True
             if prevent_user_from_reaching_home:
-                does_the_user_reach_home = decider_utils.yesno("At the end of the above story, is the protagonist located in their home city?", completion, default=YES)
+                does_the_user_reach_home = decider_utils.yesno(QUESTION_IS_USER_HOME, str_beginning + completion, default=YES)
                 allowed = not does_the_user_reach_home
+
+            if require_user_to_be_still_engaged_with_bandits:
+                is_user_engaged_with_bandits = decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, str_beginning + completion, default=YES)
+                allowed = allowed and is_user_engaged_with_bandits
 
             if allowed and len(completion) > len(longest_completion):
                 longest_completion = completion
@@ -69,7 +78,7 @@ def elaborate(str_beginning, prevent_user_from_reaching_home=True):
     return str_beginning + longest_completion
 
 
-def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_home=True):
+def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=True):
     canon_text = ""
     if os.path.exists(filename):
         with open(filename, "r") as f:
@@ -77,7 +86,7 @@ def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_h
             return canon_text
     else:
         ui("Preparing canon text...")
-        canon_text = elaborate(str_beginning, prevent_user_from_reaching_home)
+        canon_text = elaborate(str_beginning, prevent_user_from_reaching_home=prevent_user_from_reaching_home, require_user_to_be_still_engaged_with_bandits=require_user_to_be_still_engaged_with_bandits)
         with open(filename, "w") as f:
             f.write(canon_text)
         return canon_text
@@ -112,9 +121,13 @@ def main():
             + "It is very common to be waylaid by bandits who will try to steal some of your gold, or to take some of it for 'protection'.  "
             + "If you make it home with less than 30 coins or do not make it home at all, your family will not be able to afford food to eat.",
             prevent_user_from_reaching_home=True,
+            require_user_to_be_still_engaged_with_bandits=True
         )
     )
 
+    while True:
+        p("Awaiting user input:")
+        input()
 
 
 if __name__ == "__main__":
