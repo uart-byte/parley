@@ -6,7 +6,8 @@
 # This scenario is partly inspired by the Firefly episode "The Train Job"
 # Specifically, the idea that pirates might have compassion if they know what they are stealing is much-needed medicine in excess of what they need for their own wounds
 
-import time, os, openai
+import time, os, sys
+import openai
 
 openai.organization = os.environ.get("OPENAI_ORGANIZATION")
 openai.api_key = os.environ.get("OPENAI_KEY")
@@ -184,14 +185,14 @@ class Character:
     def str_verbose(self):
         return "\n".join(
             [
-                line.lstrip()
+                line.replace("        ", "")
                 for line in f"""
         [Begin Character Sheet]
-        Name: {self.name}
-        HP: {self.hp}
-        Inventory: {", ".join([str(item) for item in self.equipment])}
-        Location: {self.location_ship_currently_aboard}
-        Ship: {self.faction}
+          Name: {self.name}
+          HP: {self.hp}
+          Inventory: {", ".join([str(item) for item in self.equipment])}
+          Location: {self.location_ship_currently_aboard}
+          Ship: {self.faction}
         [End Character Sheet]
         """.splitlines() if line != ""
             ]
@@ -351,16 +352,21 @@ g_characters = [
 
 g_on_screen_transcript = ""
 
-# p() means print to screen and transcript
+# ui() means print only to screen.  It has a slow printing effect
+def ui(s=""):
+    for letter in s:
+        print(letter, end="")
+        sys.stdout.flush()
+        time.sleep(0.008)
+    print()
+    sys.stdout.flush()
+
+# p() means print to screen and transcript.  It also has a slow printing effect
 def p(s=""):
     global g_on_screen_transcript
-    print(s)
     g_on_screen_transcript += s + "\n"
+    ui(s)
 
-
-# ui() means print only to screen
-def ui(s=""):
-    print(s)
 
 
 def look_around():
@@ -389,31 +395,30 @@ def look_around():
     return s
 
 
-DEFAULT_TIMED_ACTION_LIMIT = 30
-def timed_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
-    ui(f"You have {limit_sec} seconds.")
-    ui("Choose your move:")
-    start_t = time.time()
-    player_cmd = input()
-    end_t = time.time()
-    if end_t > start_t + limit_sec:
-        ui("You failed to type fast enough.  You will do nothing.")
-        return None
-    else:
-        return player_cmd
 
-
-LEGAL_COMMANDS = """
-CMD=0: DO NOTHING | PASS | WAIT
-CMD=1: LOOK AROUND | SURVEY | LOOK AT MY SHIP | LOOK AT THE PIRATE SHIP | LOOK AT THE OTHER SHIP
-CMD=2: ATTACK | FIRE AT | SWING AT | PUNCH | KICK | KILL | HURT
-CMD=3: FIRE CANNON | USE CANNON
-CMD=4: BOARD SHIP
-CMD=5: APPLY MEDICINE TO | HEAL
-CMD=6: SAY | YELL | SPEAK | SHOUT | TELL | RESPOND
-CMD=7: INVENTORY | LOOK AT SELF
+CMD_DO_NOTHING = 0
+CMD_LOOK_AROUND = 1
+CMD_MELEE_ATTACK = 2
+CMD_WALK_TO = 3
+CMD_AIM_CANNONS = 4
+CMD_FIRE_CANNONS = 5
+CMD_GRAPPLE_OVER_TO_SHIP = 6
+CMD_APPLY_MEDICINE = 7
+CMD_SPEAK = 8
+CMD_INVENTORY = 9
+NUMBER_OF_HIGHEST_LEGAL_CMD = 9
+LEGAL_COMMANDS = f"""
+CMD={CMD_DO_NOTHING}: DO NOTHING | PASS | WAIT | STOP | HOLD YOUR FIRE | CEASE FIRE
+CMD={CMD_LOOK_AROUND}: LOOK AROUND | SURVEY | LOOK AT MY SHIP | LOOK AT THE PIRATE SHIP | LOOK AT THE OTHER SHIP
+CMD={CMD_MELEE_ATTACK}: ATTACK | FIRE AT | SWING AT | PUNCH | KICK | KILL | HURT
+CMD={CMD_WALK_TO}: APPROACH | MOVE TO | RUN TO | WALK TO | MOVE NEAR TO | FOLLOW
+CMD={CMD_AIM_CANNONS}: AIM THE CANNONS AT | PREPARE FOR A BROADSIDE | RELOAD THE CANNONS | PREPARE TO FIRE
+CMD={CMD_FIRE_CANNONS}: FIRE CANNONS | USE THE CANNONS
+CMD={CMD_GRAPPLE_OVER_TO_SHIP}: BOARD SHIP | JUMP ABOARD | GRAPPLE | SWING TO | LEAP ABOARD | BOARD THE ENEMY SHIP
+CMD={CMD_APPLY_MEDICINE}: APPLY MEDICINE TO | HEAL
+CMD={CMD_SPEAK}: SAY | YELL | SPEAK | SHOUT | TELL | RESPOND
+CMD={CMD_INVENTORY}: INVENTORY | LOOK AT SELF
 """
-NUMBER_OF_HIGHEST_LEGAL_CMD = 7
 
 def get_closest_legal_cmd(avatar_action_str):
     # The avator might be human-driven or bot-driven
@@ -443,7 +448,25 @@ def get_closest_legal_cmd(avatar_action_str):
     return maybe_cmd
 
 
-def main(start_with_practice_turns=True, force_character_select=None):
+
+DEFAULT_TIMED_ACTION_LIMIT = 30
+NO_TIME_LIMIT = None
+def player_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
+    if limit_sec != NO_TIME_LIMIT:
+        ui(f"You have {limit_sec} seconds.")
+    ui("Choose your move:")
+    start_t = time.time()
+    player_cmd_str = input()
+    end_t = time.time()
+    if limit_sec != NO_TIME_LIMIT and end_t > start_t + limit_sec:
+        ui("You failed to type fast enough.  You will do nothing.")
+        return (CMD_DO_NOTHING, "")
+    else:
+        return get_closest_legal_cmd(player_cmd_str), player_cmd_str
+
+
+
+def main(force_character_select=None):
     global g_ships, g_characters, g_on_screen_transcript
 
     p("-----------------------------------  ----")
@@ -482,25 +505,25 @@ def main(start_with_practice_turns=True, force_character_select=None):
         ui("Invalid selection.")
     ui()
 
-    if start_with_practice_turns:
-        ui('Throughout this game, there will be "timed actions" which means that you have a limited number of seconds to provide an input,')
-        ui("and if you take too long to respond, you will be considered to have taken no action.")
-        ui()
-        ui("Let's try a practice timed action.")
-        ui("Let's start by getting our bearings.  Try looking around you.")
-        for nth in ["1st", "2nd", "3rd", "4th", "5th"]:
-            ui()
-            ui(f"This is your {nth} practice turn.")
-            ui('Try saying "inventory" or "look around".')
-            action = timed_action(limit_sec=10)
-        ui()
-
     p("You have selected to play as:\n" + player_ch.str_verbose())
-    p(look_around())
 
-    while True:
-        inp = input()
-        print(get_closest_legal_cmd(inp))
+
+    ui('Throughout this game, there will be "timed actions" which means that you have a limited number of seconds to provide an input,')
+    ui("and if you take too long to respond, you will be considered to have taken no action.")
+    ui()
+    ui("Let's try a practice timed action.")
+    ui("Let's start by getting our bearings.")
+    cmd = 0
+    while cmd != CMD_LOOK_AROUND:
+        ui()
+        ui("Try looking around you.")
+        cmd, cmd_str = player_action(limit_sec=10)
+    ui()
+    p(look_around())
+    
+    # while True:
+    #     inp = input()
+    #     ui(get_closest_legal_cmd(inp))
 
 if __name__ == "__main__":
-    main(start_with_practice_turns=False, force_character_select="2")
+    main()
