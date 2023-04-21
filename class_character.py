@@ -8,16 +8,15 @@ class Character:
         name,
         faction,
         rank,
-        compassion_pct=50,
         location_ship_currently_aboard=LOCATION_SAME_AS_FACTION_STARTING_PLACE,
         hp=100,
         equipment=[],
         playable=False,
-        tendency_to_disobey_orders_pct=1,
-        desperation_to_get_paid_for_this_job_pct=10,
-        money_gold_coins=0,
         untreated_treatable_diseases_penalty_to_hp=0,
         close_to=[],  # TODO make it possible to be close to people, the helm, or the cannons
+        goal_1="",
+        goal_2="",
+        goal_3="",
     ):
         self.name = name
         self.faction = faction
@@ -29,8 +28,9 @@ class Character:
         self.hp = hp
         self.equipment = equipment
         self.playable = playable
-        self.tendency_to_disobey_orders_pct = tendency_to_disobey_orders_pct
-        self.desperation_to_get_paid_for_this_job_pct = desperation_to_get_paid_for_this_job_pct
+        self.goal_1 = goal_1
+        self.goal_2 = goal_2
+        self.goal_3 = goal_3
 
     def __str__(self):
         return self.name
