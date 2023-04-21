@@ -6,12 +6,12 @@
 # This scenario is partly inspired by the Firefly episode "The Train Job"
 # Specifically, the idea that pirates might have compassion if they know what they are stealing is much-needed medicine in excess of what they need for their own wounds
 
-import time, os, sys
+import time, os, sys, random
 import openai
 from class_ship import Ship
 from class_equippable_item import PISTOL, CUTLASS, MEDICAL_SATCHEL
 from class_character import Character, LOCATION_SAME_AS_FACTION_STARTING_PLACE
-from transcript_management import ui, p, manually_add_to_transcript, escape_quotes_etc, set_slow_print_enabled
+from transcript_management import ui, p, manually_add_to_transcript, escape_quotes_etc, set_slow_print_enabled, read_global_transcript
 
 
 HEAVILY_ARMED_FRIENDLY = Ship(
@@ -163,7 +163,7 @@ g_characters = [
         equipment=[CUTLASS, PISTOL],
         goal_1="My primary goal is to stay alive.",
         goal_2="My secondary goal is kill an enemy sailor.  I am bloodthirsty.",
-        goal_3="My tertiary goal is to follow the orders of my captain but I do not respect any orders of the 1st mate."
+        goal_3="My tertiary goal is to follow the orders of my captain but I do not respect any orders of the 1st mate.",
     ),
     Character(
         "Georgette Greggors",
@@ -184,7 +184,7 @@ g_characters = [
         equipment=[MEDICAL_SATCHEL],
         goal_1="My primary goal is to stay alive.",
         goal_2="My secondary goal is to avoid healing pirates.",
-        goal_3="A minor goal is to follow the orders of my captain."
+        goal_3="A minor goal is to follow the orders of my captain.",
     ),
     Character(
         "Ignacio Imperator",
@@ -194,7 +194,7 @@ g_characters = [
         equipment=[MEDICAL_SATCHEL],
         goal_1="My primary goal is to stay alive.",
         goal_2="My secondary goal is to heal anyone who needs healing, even if they are a pirate.",
-        goal_3="A minor goal is to follow the orders of my captain."
+        goal_3="A minor goal is to follow the orders of my captain.",
     ),
     Character(
         "Julie Jameson",
@@ -218,7 +218,7 @@ g_characters = [
 
 
 def look_around():
-    global g_ships, g_characters, g_on_screen_transcript
+    global g_ships, g_characters
     s = ""
     s += f"You see {len(g_ships)} ships, including your own.\n"
     ship_idx = 1
@@ -312,8 +312,28 @@ def player_action(limit_sec=DEFAULT_TIMED_ACTION_LIMIT):
         return get_closest_legal_cmd(player_cmd_str), player_cmd_str
 
 
+def ai_action(ch):
+    ui(f"{ch} is thinking...")
+    prompt = read_global_transcript() + "\n"  # Adding \n to make sure we get a new string object and don't accidentally mutate g_transcript_seen_heard_by_all_characters
+    prompt += "You are taking the role of the following character:\n"
+    prompt += ch.str_verbose()
+    prompt += "You have available the following types of actions you can take:\n"
+    prompt += LEGAL_COMMANDS
+    prompt += "Some of those commands, such as WALK TO or ATTACK, require specifying a person as the target.\n"
+    prompt += "Please choose your action based on your PRIMARY GOAL being your most important goal, followed by your Secondary Goal and Tertiary Goal which are less important.\n"
+    prompt += "To reiterate:\n"
+    prompt += f"Your PRIMARY GOAL is: {ch.goal_1}\n"
+    prompt += f"Your Secondary Goal is: {ch.goal_2}\n"
+    prompt += f"Your Tertiary Goal is: {ch.goal_3}\n"
+    prompt += 'Choose your action, such as "Walk to Zoe Zebra" or "Say I surrender".\n'
+    prompt += "Choose your action now:\n"
+    cmd_str = openai.Completion.create(engine="text-davinci-003", prompt=prompt, temperature=0.95, max_tokens=100, frequency_penalty=0, presence_penalty=0, n=1)["choices"][0]["text"]
+    cmd = get_closest_legal_cmd(cmd_str)
+    return cmd, cmd_str
+
+
 def main(force_character_select=None):
-    global g_ships, g_characters, g_on_screen_transcript
+    global g_ships, g_characters
 
     openai.organization = os.environ.get("OPENAI_ORGANIZATION")
     openai.api_key = os.environ.get("OPENAI_KEY")
@@ -361,7 +381,9 @@ def main(force_character_select=None):
     ui()
     ui("Let's try a practice timed action.")
     ui("Let's start by getting our bearings.")
-    cmd = 0
+
+    cmd = CMD_DO_NOTHING
+    cmd_str = ""
     while cmd != CMD_LOOK_AROUND:
         ui()
         ui("Try looking around you.")
@@ -372,7 +394,8 @@ def main(force_character_select=None):
     manually_add_to_transcript(look_around())
 
     ui("Okay, now let's look at your player character sheet.")
-    cmd = 0
+    cmd = CMD_DO_NOTHING
+    cmd_str = ""
     while cmd != CMD_INVENTORY:
         ui()
         ui("Try checking your inventory.")
@@ -380,6 +403,7 @@ def main(force_character_select=None):
     ui()
     ui(player_ch.str_verbose())
 
+    p()
     p("Now it's time to begin the game!")
     p("Characters will decide their move in alphabetical order by, but all actions happen simultaneously.")
     p("Thus, if two characters with low HP attack each other in the same turn,")
@@ -389,9 +413,35 @@ def main(force_character_select=None):
     ui("Press Enter when you are ready for the game to begin.")
     input()
 
+    turn = 1
     while True:
-        inp = input()
-        cmd, cmd_str = get_closest_legal_cmd(inp)
+        p()
+        shouted_sentences = []
+
+        # Always have the player go first, so they don't see what ai bots are doing "simultaneously"
+        for ch in [player_ch] + [ch for ch in g_characters if ch != player_ch]:
+            cmd, cmd_str = CMD_DO_NOTHING, ""
+            if ch == player_ch:
+                cmd, cmd_str = player_action(limit_sec=30)
+            else:
+                cmd, cmd_str = ai_action(ch)
+                ui(cmd)
+                ui(cmd_str)
+
+            if cmd == CMD_SPEAK:
+                # Try to strip out the word "say" as well as CMD=8
+                # E.g. "CMD=8 say I surrender!" --> "I surrender!"
+                n_words_to_drop = 2 if cmd_str.startswith("CMD") else 1
+                shouted_sentence_payload = " ".join(escape_quotes_etc(cmd_str).strip().split(" ")[n_words_to_drop:])
+                shouted_sentences.append(f"{ch.name}: {shouted_sentence_payload}")
+
+        random.shuffle(shouted_sentences)
+        if len(shouted_sentences) > 0:
+            p("The following sentences are shouted:")
+            for sent in shouted_sentences:
+                p(sent)
+            p()
+    # end while True
 
 
 if __name__ == "__main__":

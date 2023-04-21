@@ -44,3 +44,8 @@ def manually_add_to_transcript(s=""):
 def p(s=""):
     manually_add_to_transcript(s)
     ui(s)
+
+
+def read_global_transcript():
+    global g_transcript_seen_heard_by_all_characters
+    return g_transcript_seen_heard_by_all_characters

@@ -46,6 +46,9 @@ class Character:
           Inventory: {", ".join([str(item) for item in self.equipment])}
           Location: {self.location_ship_currently_aboard}
           Nationality: {self.faction.country_of_most_of_crew_citizenship}
+          PRIMARY GOAL: {self.goal_1}
+          Secondary Goal: {self.goal_2}
+          Tertiary Goal: {self.goal_3}
         [End Character Sheet]
         """.splitlines()
                 if line != ""
