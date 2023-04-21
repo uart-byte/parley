@@ -12,7 +12,7 @@ from transcript_management import (
 )
 
 
-CANON_STORY_PART_1 = "canon_part_1.txt"
+CANON_STORY_PART_1 = "canon_part_1c.txt"
 
 N_COMPLETIONS_WHEN_ELABORATING = 3
 
@@ -42,8 +42,9 @@ def load_or_generate_canon(filename, str_beginning):
             canon_text = f.read()
             return canon_text
     else:
+        ui("Preparing canon text...")
         canon_text = elaborate(str_beginning)
-        with open(filename, "r") as f:
+        with open(filename, "w") as f:
             f.write(canon_text)
         return canon_text
 
@@ -55,12 +56,12 @@ def main():
     p(
         load_or_generate_canon(
             CANON_STORY_PART_1,
-            "The year is 603, in an alternate reality fantasy world with a little bit of magic.  " +
-            "Magically-powered firearms are common, especially six-shooter revolvers, which you and almost everyone carries.  " +
-            "You are a seasonal laborer making a once a year summer trek from Tibet across the Himalayas to Nepal to return home " +
-            "to your family with your year's worth of wages which is 100 gold coins.  " +
-            "It is very common to be waylaid by bandits who will try to steal some of your gold, or to take some of it for 'protection'.  " +
-            "If you make it home with less than 30 coins or do not make it home at all, your family will not be able to afford food to eat."
+            "The year is 603, in an alternate reality fantasy world with a little bit of magic.  "
+            + "Magically-powered firearms are common, especially six-shooter revolvers, which you and almost everyone carries.  "
+            + "You are a seasonal laborer making a once a year summer trek from Tibet across the Himalayas to Nepal to return home "
+            + "to your family with your year's worth of wages which is 100 gold coins.  "
+            + "It is very common to be waylaid by bandits who will try to steal some of your gold, or to take some of it for 'protection'.  "
+            + "If you make it home with less than 30 coins or do not make it home at all, your family will not be able to afford food to eat.",
         )
     )
 
@@ -78,7 +79,6 @@ def main():
     p("- -----                                 -")
     p("-------------- --------------------------")
     p()
-
 
 
 if __name__ == "__main__":
