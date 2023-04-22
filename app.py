@@ -223,7 +223,7 @@ else:
         add_to_narrator_transcript()
         add_to_narrator_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
 
-        full_transcript = read_global_transcript()
+        full_transcript = retrieve_narrator_transcript()
         new_full_transcript = elaborate(
             full_transcript,
             prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
