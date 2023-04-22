@@ -21,15 +21,8 @@ SCENARIO_FILE_SUFFIX = ".txt"
 def choose_scenario():
     # For conciseness, this function does not do error checking
     ls = os.listdir(".")
-    scenarios = [
-        file
-        for file in ls
-        if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)
-    ]
-    scenario_numbers = [
-        int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, ""))
-        for file in scenarios
-    ]
+    scenarios = [file for file in ls if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)]
+    scenario_numbers = [int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, "")) for file in scenarios]
     scenario_numbers = sorted(scenario_numbers)
 
     new_scenario = 1
@@ -50,29 +43,17 @@ def choose_scenario():
     return f"{SCENARIO_FILE_PREFIX}{selected}{SCENARIO_FILE_SUFFIX}"
 
 
-N_COMPLETIONS_WHEN_ELABORATING = (
-    1  # I previously had this set to 3, but that made the program very slow.
-)
+N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
 
-QUESTION_IS_USER_HOME = (
-    "At the end of the above story, is the protagonist located at their destination?"
-)
+QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
 QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story, does the protagonist still have at least 30 gold pieces?"
 QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
-QUESTION_IS_ACTION_LIKELY_LETHAL = (
-    "Is the action just described likely to result in anyone dying?"
-)
-QUESTION_IS_ACTION_RUNNING_AWAY = (
-    "Is the action just described an example of running away by sprinting?"
-)
+QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
+QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
 QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
-QUESTION_DID_PROTAGONIST_KILL = (
-    "In the story segment above, did the protagonist kill anyone?"
-)
-QUESTION_DID_PROTAGONIST_PERISH = (
-    "In the story segment above, did the protagonist perish?"
-)
+QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
+QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagonist perish?"
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
@@ -103,9 +84,7 @@ def elaborate(
 
             allowed = True
             if prevent_user_from_reaching_home:
-                does_the_user_reach_home = decider_utils.yesno(
-                    QUESTION_IS_USER_HOME, str_beginning + completion, default=YES
-                )
+                does_the_user_reach_home = decider_utils.yesno(QUESTION_IS_USER_HOME, str_beginning + completion, default=YES)
                 allowed = not does_the_user_reach_home
 
             if require_user_to_be_still_engaged_with_bandits:
@@ -147,37 +126,21 @@ def load_or_generate_canon(
 
 def game_over_fail(reason):
     p()
-    p(
-        "//################################################################################################//"
-    )
-    p(
-        "##  GAME OVER.                                                                                    &&"
-    )
+    p("//################################################################################################//")
+    p("##  GAME OVER.                                                                                    &&")
     p("##  " + reason)
-    p(
-        "##  YOU LOSE.                                                                                     &&"
-    )
-    p(
-        "//################################################################################################//"
-    )
+    p("##  YOU LOSE.                                                                                     &&")
+    p("//################################################################################################//")
     return 0  # sys.exit code
 
 
 def game_over_victory(reason):
     p()
-    p(
-        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    )
-    p(
-        "!!  GAME OVER.                                                                                    !!"
-    )
-    p(
-        "!!  YOU WIN!                                                                                      !!"
-    )
+    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    p("!!  GAME OVER.                                                                                    !!")
+    p("!!  YOU WIN!                                                                                      !!")
     p("!!  " + reason)
-    p(
-        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    )
+    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     return 0  # sys.exit code
 
 
@@ -216,12 +179,8 @@ def main():
 
     add_to_narrator_transcript()
     add_to_narrator_transcript("IMPORTANT NOTES TO THE NARRATOR:")
-    add_to_narrator_transcript(
-        "BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED."
-    )
-    add_to_narrator_transcript(
-        "ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS."
-    )
+    add_to_narrator_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
+    add_to_narrator_transcript("ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
     add_to_narrator_transcript()
 
     n_turns_elapsed = 0
@@ -231,68 +190,46 @@ def main():
         user_inp = input()
         n_turns_elapsed += 1
 
-        is_lethal_action = decider_utils.yesno(
-            QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO
-        )
+        is_lethal_action = decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO)
         if is_lethal_action:
-            return game_over_fail(
-                "You have taken an action that is likely to result in killing someone."
-            )
+            return game_over_fail("You have taken an action that is likely to result in killing someone.")
 
-        is_running_away = decider_utils.yesno(
-            QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO
-        )
+        is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
         if is_running_away:
             p("Invalid entry.  You cannot outrun these bandits.")
             continue
 
-        is_using_magic = decider_utils.yesno(
-            QUESTION_IS_ACTION_MAGIC, user_inp, default=NO
-        )
+        is_using_magic = decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO)
         if is_using_magic:
-            p(
-                "Invalid entry.  You are not a spellcaster and have no magic items except your revolver."
-            )
+            p("Invalid entry.  You are not a spellcaster and have no magic items except your revolver.")
             continue
 
         add_to_narrator_transcript(user_inp)
         p()
 
         add_to_narrator_transcript()
-        add_to_narrator_transcript(
-            "What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!"
-        )
+        add_to_narrator_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
 
         full_transcript = read_global_transcript()
         new_full_transcript = elaborate(
             full_transcript,
-            prevent_user_from_reaching_home=n_turns_elapsed
-            < N_TURNS_REQUIRED_TO_REACH_HOME,
-            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed
-            < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+            prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
+            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
         )
         new_part = new_full_transcript.replace(full_transcript, "")
 
         p(new_part)
 
-        did_user_die = decider_utils.yesno(
-            QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO
-        )
+        did_user_die = decider_utils.yesno(QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO)
         if did_user_die:
             return game_over_fail("You have died.")
 
-        did_user_kill = decider_utils.yesno(
-            QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO
-        )
-        did_user_kill = did_user_kill or decider_utils.yesno(
-            QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO
-        )
+        did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO)
+        did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO)
         if did_user_kill:
             return game_over_fail("You have taken a life.")
 
-        is_user_home = decider_utils.yesno(
-            QUESTION_IS_USER_HOME, new_full_transcript, default=NO
-        )
+        is_user_home = decider_utils.yesno(QUESTION_IS_USER_HOME, new_full_transcript, default=NO)
         if is_user_home:
             has_at_least_30_gold = decider_utils.yesno(
                 QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD,
@@ -300,13 +237,9 @@ def main():
                 default=NO,
             )
             if has_at_least_30_gold:
-                return game_over_victory(
-                    "You made it home with 30+ gold!  Your family is grateful and you all hug in celebration."
-                )
+                return game_over_victory("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
             else:
-                return game_over_fail(
-                    "You reached home with less than 30 gold - too little for your family to live on."
-                )
+                return game_over_fail("You reached home with less than 30 gold - too little for your family to live on.")
 
 
 if __name__ == "__main__":

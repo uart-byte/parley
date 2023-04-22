@@ -2,13 +2,7 @@ import sys, time
 
 
 def escape_quotes_etc(s):
-    return (
-        s.replace('"', "'")
-        .replace(":", "")
-        .replace("\n", " ")
-        .replace("{", "(")
-        .replace("}", ")")
-    )
+    return s.replace('"', "'").replace(":", "").replace("\n", " ").replace("{", "(").replace("}", ")")
 
 
 g_transcript_seen_heard_by_all_characters = ""

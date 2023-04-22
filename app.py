@@ -2,15 +2,18 @@ import streamlit as st
 import os
 import textwrap
 import openai
+import decider_utils
+from decider_utils import YES, NO
 
 openai.organization = os.environ.get("OPENAI_ORGANIZATION")
 openai.api_key = os.environ.get("OPENAI_KEY")
 
 LINE_WIDTH = 80
+STR_AWAITING_USER_INPUT = "Awaiting user input:"
 
+G_N_TURNS_ELAPSED_KEY = "G_N_TURNS_ELAPSED_KEY"
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
 G_NARRATOR_TRANSCRIPT_KEY = "G_NARRATOR_TRANSCRIPT_KEY"
-# G_GAME_OVER_KEY = "G_GAME_OVER_KEY"
 
 
 # ui() means print only to the user.
@@ -40,12 +43,14 @@ def retrieve_user_transcript():
         return st.session_state[G_USER_TRANSCRIPT_KEY]
     else:
         return ""
-    
+
+
 def retrieve_narrator_transcript():
     if G_NARRATOR_TRANSCRIPT_KEY in st.session_state:
         return st.session_state[G_NARRATOR_TRANSCRIPT_KEY]
     else:
         return ""
+
 
 def apply_word_wrap(multi_paragraph_str):
     paragraphs_in = multi_paragraph_str.split("\n")
@@ -55,13 +60,67 @@ def apply_word_wrap(multi_paragraph_str):
     return "\n".join(paragraphs_out)
 
 
-# def set_game_over
+def continue_main_game_loop():
+    p(STR_AWAITING_USER_INPUT)
+    st.experimental_rerun()
+    st.stop()  # This statement won't be reached.  I just want to make it obvious that control flow never gets past this function.
 
-# def is_game_over():
-#     if G_GAME_OVER_KEY in st.session_state and st.session_state[G_GAME_OVER_KEY] == True:
-#         return True
-#     else:
-#         return False
+
+N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
+MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
+
+QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
+QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story, does the protagonist still have at least 30 gold pieces?"
+QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
+QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
+QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
+QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
+QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
+QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagonist perish?"
+
+N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
+N_TURNS_REQUIRED_TO_REACH_HOME = 6
+
+def elaborate(
+    str_beginning,
+    prevent_user_from_reaching_home=True,
+    require_user_to_be_still_engaged_with_bandits=False,
+):
+
+    longest_completion = ""
+
+    while len(longest_completion) < MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING:
+        completions = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=str_beginning,
+            temperature=0.5,
+            max_tokens=4000 - int(len(str_beginning) / 4),
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
+            n=N_COMPLETIONS_WHEN_ELABORATING,
+        )["choices"]
+
+        for i in range(0, N_COMPLETIONS_WHEN_ELABORATING):
+            completion = completions[i]["text"]
+            # debug_print(completion)
+
+            allowed = True
+            if prevent_user_from_reaching_home:
+                does_the_user_reach_home = decider_utils.yesno(QUESTION_IS_USER_HOME, str_beginning + completion, default=YES)
+                allowed = not does_the_user_reach_home
+
+            if require_user_to_be_still_engaged_with_bandits:
+                is_user_engaged_with_bandits = decider_utils.yesno(
+                    QUESTION_IS_USER_ENGAGED_WITH_BANDITS,
+                    str_beginning + completion,
+                    default=YES,
+                )
+                allowed = allowed and is_user_engaged_with_bandits
+
+            if allowed and len(completion) > len(longest_completion):
+                longest_completion = completion
+
+    return str_beginning + longest_completion
 
 
 # Begin an attempt at Streamlit literate programming
@@ -77,11 +136,12 @@ You turn around to find two bandits blocking your path, each armed with a magica
 What do you do?"""
 
 
-st.title("PARLEY")
+st.header("PARLEY")
 
 
 if G_USER_TRANSCRIPT_KEY not in st.session_state:
     # New user
+    st.session_state[G_N_TURNS_ELAPSED_KEY] = 0
 
     p()
     p("-----------------------------------  -------------------")
@@ -96,22 +156,23 @@ if G_USER_TRANSCRIPT_KEY not in st.session_state:
     p("-------------- ------------------------------- ------- -")
     p()
 
-    p(SCENARIO_INTRO_3)
+    p(SCENARIO_INTRO_3)  # I'm hardcoding the streamlit version of the game to use a hardcoded scenario, at least for now.  If the game becomes popular I can add back the support for other scenarios.
 
     add_to_narrator_transcript()
     add_to_narrator_transcript("IMPORTANT NOTES TO THE NARRATOR:")
-    add_to_narrator_transcript(
-        "BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED."
-    )
-    add_to_narrator_transcript(
-        "ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS."
-    )
+    add_to_narrator_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
+    add_to_narrator_transcript("ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
     add_to_narrator_transcript()
 
+    p(STR_AWAITING_USER_INPUT)
 
-p("Awaiting user input:")
 
 st.text(apply_word_wrap(retrieve_user_transcript()))
 
 user_inp = st.text_area("Type your next action, then press Cmd-Enter.")
 
+if user_inp != "":
+    # Once the user has submitted their latest action
+
+    n_turns_elapsed = st.session_state[G_N_TURNS_ELAPSED_KEY] + 1
+    st.session_state[G_N_TURNS_ELAPSED_KEY] = n_turns_elapsed
