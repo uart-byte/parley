@@ -1,10 +1,12 @@
 import streamlit as st
 import os
+import textwrap
 import openai
 
 openai.organization = os.environ.get("OPENAI_ORGANIZATION")
 openai.api_key = os.environ.get("OPENAI_KEY")
 
+LINE_WIDTH = 80
 
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
 G_NARRATOR_TRANSCRIPT_KEY = "G_NARRATOR_TRANSCRIPT_KEY"
@@ -44,6 +46,14 @@ def retrieve_narrator_transcript():
         return st.session_state[G_NARRATOR_TRANSCRIPT_KEY]
     else:
         return ""
+
+def apply_word_wrap(multi_paragraph_str):
+    paragraphs_in = multi_paragraph_str.split("\n")
+    paragraphs_out = []
+    for p in paragraphs_in:
+        paragraphs_out.append(textwrap.fill(p, width=LINE_WIDTH))
+    return "\n".join(paragraphs_out)
+
 
 # def set_game_over
 
@@ -101,6 +111,7 @@ if G_USER_TRANSCRIPT_KEY not in st.session_state:
 
 p("Awaiting user input:")
 
-st.text(retrieve_user_transcript())
+st.text(apply_word_wrap(retrieve_user_transcript()))
+
 user_inp = st.text_area("Type your next action, then press Cmd-Enter.")
 
