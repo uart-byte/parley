@@ -14,6 +14,7 @@ STR_AWAITING_USER_INPUT = "Awaiting user input:"
 G_N_TURNS_ELAPSED_KEY = "G_N_TURNS_ELAPSED_KEY"
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
 G_NARRATOR_TRANSCRIPT_KEY = "G_NARRATOR_TRANSCRIPT_KEY"
+G_GAME_OVER_KEY = "G_GAME_OVER_KEY"
 
 
 # ui() means print only to the user.
@@ -66,6 +67,26 @@ def continue_main_game_loop():
     st.stop()  # This statement won't be reached.  I just want to make it obvious that control flow never gets past this function.
 
 
+def game_over_fail(reason):
+    p()
+    p("//################################################################################################//")
+    p("##  GAME OVER.                                                                                    &&")
+    p("##  " + reason)
+    p("##  YOU LOSE.                                                                                     &&")
+    p("//################################################################################################//")
+    st.session_state[G_GAME_OVER_KEY] = True
+    continue_main_game_loop()
+
+def game_over_victory(reason):
+    p()
+    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    p("!!  GAME OVER.                                                                                    !!")
+    p("!!  YOU WIN!                                                                                      !!")
+    p("!!  " + reason)
+    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    st.session_state[G_GAME_OVER_KEY] = True
+    continue_main_game_loop()
+
 N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
 
@@ -80,6 +101,7 @@ QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagoni
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
+
 
 def elaborate(
     str_beginning,
@@ -136,12 +158,10 @@ You turn around to find two bandits blocking your path, each armed with a magica
 What do you do?"""
 
 
-st.header("PARLEY")
-
-
 if G_USER_TRANSCRIPT_KEY not in st.session_state:
     # New user
     st.session_state[G_N_TURNS_ELAPSED_KEY] = 0
+    st.session_state[G_GAME_OVER_KEY] = False
 
     p()
     p("-----------------------------------  -------------------")
@@ -169,10 +189,70 @@ if G_USER_TRANSCRIPT_KEY not in st.session_state:
 
 st.text(apply_word_wrap(retrieve_user_transcript()))
 
-user_inp = st.text_area("Type your next action, then press Cmd-Enter.")
+is_game_over = st.session_state[G_GAME_OVER_KEY]
+if is_game_over:
+    pass # TODO button to try again
 
-if user_inp != "":
-    # Once the user has submitted their latest action
+else:
+    user_inp = st.text_area("Type your next action, then press Cmd-Enter.")
 
-    n_turns_elapsed = st.session_state[G_N_TURNS_ELAPSED_KEY] + 1
-    st.session_state[G_N_TURNS_ELAPSED_KEY] = n_turns_elapsed
+    if user_inp != "":
+        # Once the user has submitted their latest action
+        ui(user_inp)
+
+        n_turns_elapsed = st.session_state[G_N_TURNS_ELAPSED_KEY] + 1
+        st.session_state[G_N_TURNS_ELAPSED_KEY] = n_turns_elapsed
+
+        is_lethal_action = decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO)
+        if is_lethal_action:
+            game_over_fail("You have taken an action that is likely to result in killing someone.")
+
+        is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
+        if is_running_away:
+            p("Invalid entry.  You cannot outrun these bandits.")
+            continue_main_game_loop()
+
+        is_using_magic = decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO)
+        if is_using_magic:
+            p("Invalid entry.  You are not a spellcaster and have no magic items except your revolver.")
+            continue_main_game_loop()
+
+        add_to_narrator_transcript(user_inp)
+        p()
+
+        add_to_narrator_transcript()
+        add_to_narrator_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
+
+        full_transcript = read_global_transcript()
+        new_full_transcript = elaborate(
+            full_transcript,
+            prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
+            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+        )
+        new_part = new_full_transcript.replace(full_transcript, "")
+
+        p(new_part)
+
+        did_user_die = decider_utils.yesno(QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO)
+        if did_user_die:
+            game_over_fail("You have died.")
+
+        did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO)
+        did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO)
+        if did_user_kill:
+            game_over_fail("You have taken a life.")
+
+        is_user_home = decider_utils.yesno(QUESTION_IS_USER_HOME, new_full_transcript, default=NO)
+        if is_user_home:
+            has_at_least_30_gold = decider_utils.yesno(
+                QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD,
+                new_full_transcript,
+                default=NO,
+            )
+            if has_at_least_30_gold:
+                game_over_victory("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
+            else:
+                game_over_fail("You reached home with less than 30 gold - too little for your family to live on.")
+
+        continue_main_game_loop()
+
