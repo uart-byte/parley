@@ -171,8 +171,6 @@ def main():
     while True:
         p("Awaiting user input:")
         user_inp = input()
-        manually_add_to_transcript(user_inp)
-        p()
         n_turns_elapsed += 1
 
         is_lethal_action = decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO)
@@ -188,6 +186,9 @@ def main():
         if is_using_magic:
             p("Invalid entry.  You are not a spellcaster and have no magic items except your revolver.")
             continue
+
+        manually_add_to_transcript(user_inp)
+        p()
 
         manually_add_to_transcript()
         manually_add_to_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
