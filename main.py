@@ -56,6 +56,7 @@ QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
 
+
 def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=False):
 
     longest_completion = ""
@@ -113,7 +114,8 @@ def game_over_fail(reason):
     p("##  " + reason)
     p("##  YOU LOSE.                                                                                     &&")
     p("//################################################################################################//")
-    return 0 # sys.exit code
+    return 0  # sys.exit code
+
 
 def game_over_victory(reason):
     p()
@@ -122,7 +124,7 @@ def game_over_victory(reason):
     p("!!  YOU WIN!                                                                                      !!")
     p("!!  " + reason)
     p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    return 0 # sys.exit code
+    return 0  # sys.exit code
 
 
 def main():
@@ -191,9 +193,11 @@ def main():
         manually_add_to_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
 
         full_transcript = read_global_transcript()
-        new_full_transcript = elaborate(full_transcript,
-            prevent_user_from_reaching_home= n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME, 
-            require_user_to_be_still_engaged_with_bandits= n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER)
+        new_full_transcript = elaborate(
+            full_transcript,
+            prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
+            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+        )
         new_part = new_full_transcript.replace(full_transcript, "")
 
         p(new_part)
@@ -210,8 +214,6 @@ def main():
                 return game_over_victory("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
             else:
                 return game_over_fail("You reached home with less than 30 gold - too little for your family to live on.")
-
-
 
 
 if __name__ == "__main__":
