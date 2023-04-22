@@ -52,6 +52,7 @@ QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to resul
 QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
 QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
 QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
+QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagonist perish?"
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
@@ -202,6 +203,10 @@ def main():
         new_part = new_full_transcript.replace(full_transcript, "")
 
         p(new_part)
+
+        did_user_die = decider_utils.yesno(QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO)
+        if did_user_die:
+            return game_over_fail("You have died.")
 
         did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO)
         did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO)
