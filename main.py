@@ -5,8 +5,7 @@ import openai
 from transcript_management import (
     ui,
     p,
-    manually_add_to_transcript,
-    escape_quotes_etc,
+    add_to_narrator_transcript,
     set_slow_print_enabled,
     read_global_transcript,
 )
@@ -22,8 +21,15 @@ SCENARIO_FILE_SUFFIX = ".txt"
 def choose_scenario():
     # For conciseness, this function does not do error checking
     ls = os.listdir(".")
-    scenarios = [file for file in ls if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)]
-    scenario_numbers = [int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, "")) for file in scenarios]
+    scenarios = [
+        file
+        for file in ls
+        if file.startswith(SCENARIO_FILE_PREFIX) and file.endswith(SCENARIO_FILE_SUFFIX)
+    ]
+    scenario_numbers = [
+        int(file.replace(SCENARIO_FILE_PREFIX, "").replace(SCENARIO_FILE_SUFFIX, ""))
+        for file in scenarios
+    ]
     scenario_numbers = sorted(scenario_numbers)
 
     new_scenario = 1
@@ -36,29 +42,47 @@ def choose_scenario():
         ui("Choose a scenario:")
         for number in scenario_numbers:
             ui(f"[{number}] {SCENARIO_FILE_PREFIX}{number}{SCENARIO_FILE_SUFFIX}")
-        ui(f"[{new_scenario}] Create New Scenario")
+        ui(
+            f"[{new_scenario}] Auto-Generate a Fresh New Scenario.  WARNING: this will make the page unresponsive for about two-five minutes.  If you choose this option please be patient and do not close the page."
+        )
         selected = int(input())
 
     return f"{SCENARIO_FILE_PREFIX}{selected}{SCENARIO_FILE_SUFFIX}"
 
 
-N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
+N_COMPLETIONS_WHEN_ELABORATING = (
+    1  # I previously had this set to 3, but that made the program very slow.
+)
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
 
-QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
+QUESTION_IS_USER_HOME = (
+    "At the end of the above story, is the protagonist located at their destination?"
+)
 QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story, does the protagonist still have at least 30 gold pieces?"
 QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
-QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
-QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
+QUESTION_IS_ACTION_LIKELY_LETHAL = (
+    "Is the action just described likely to result in anyone dying?"
+)
+QUESTION_IS_ACTION_RUNNING_AWAY = (
+    "Is the action just described an example of running away by sprinting?"
+)
 QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
-QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
-QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagonist perish?"
+QUESTION_DID_PROTAGONIST_KILL = (
+    "In the story segment above, did the protagonist kill anyone?"
+)
+QUESTION_DID_PROTAGONIST_PERISH = (
+    "In the story segment above, did the protagonist perish?"
+)
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
 
 
-def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=False):
+def elaborate(
+    str_beginning,
+    prevent_user_from_reaching_home=True,
+    require_user_to_be_still_engaged_with_bandits=False,
+):
 
     longest_completion = ""
 
@@ -79,11 +103,17 @@ def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_
 
             allowed = True
             if prevent_user_from_reaching_home:
-                does_the_user_reach_home = decider_utils.yesno(QUESTION_IS_USER_HOME, str_beginning + completion, default=YES)
+                does_the_user_reach_home = decider_utils.yesno(
+                    QUESTION_IS_USER_HOME, str_beginning + completion, default=YES
+                )
                 allowed = not does_the_user_reach_home
 
             if require_user_to_be_still_engaged_with_bandits:
-                is_user_engaged_with_bandits = decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, str_beginning + completion, default=YES)
+                is_user_engaged_with_bandits = decider_utils.yesno(
+                    QUESTION_IS_USER_ENGAGED_WITH_BANDITS,
+                    str_beginning + completion,
+                    default=YES,
+                )
                 allowed = allowed and is_user_engaged_with_bandits
 
             if allowed and len(completion) > len(longest_completion):
@@ -92,7 +122,12 @@ def elaborate(str_beginning, prevent_user_from_reaching_home=True, require_user_
     return str_beginning + longest_completion
 
 
-def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_home=True, require_user_to_be_still_engaged_with_bandits=True):
+def load_or_generate_canon(
+    filename,
+    str_beginning,
+    prevent_user_from_reaching_home=True,
+    require_user_to_be_still_engaged_with_bandits=True,
+):
     canon_text = ""
     if os.path.exists(filename):
         with open(filename, "r") as f:
@@ -101,7 +136,9 @@ def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_h
     else:
         ui("Preparing canon text...")
         canon_text = elaborate(
-            str_beginning, prevent_user_from_reaching_home=prevent_user_from_reaching_home, require_user_to_be_still_engaged_with_bandits=require_user_to_be_still_engaged_with_bandits
+            str_beginning,
+            prevent_user_from_reaching_home=prevent_user_from_reaching_home,
+            require_user_to_be_still_engaged_with_bandits=require_user_to_be_still_engaged_with_bandits,
         )
         with open(filename, "w") as f:
             f.write(canon_text)
@@ -110,21 +147,37 @@ def load_or_generate_canon(filename, str_beginning, prevent_user_from_reaching_h
 
 def game_over_fail(reason):
     p()
-    p("//################################################################################################//")
-    p("##  GAME OVER.                                                                                    &&")
+    p(
+        "//################################################################################################//"
+    )
+    p(
+        "##  GAME OVER.                                                                                    &&"
+    )
     p("##  " + reason)
-    p("##  YOU LOSE.                                                                                     &&")
-    p("//################################################################################################//")
+    p(
+        "##  YOU LOSE.                                                                                     &&"
+    )
+    p(
+        "//################################################################################################//"
+    )
     return 0  # sys.exit code
 
 
 def game_over_victory(reason):
     p()
-    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    p("!!  GAME OVER.                                                                                    !!")
-    p("!!  YOU WIN!                                                                                      !!")
+    p(
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    )
+    p(
+        "!!  GAME OVER.                                                                                    !!"
+    )
+    p(
+        "!!  YOU WIN!                                                                                      !!"
+    )
     p("!!  " + reason)
-    p("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    p(
+        "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    )
     return 0  # sys.exit code
 
 
@@ -161,11 +214,15 @@ def main():
         )
     )
 
-    manually_add_to_transcript()
-    manually_add_to_transcript("IMPORTANT NOTES TO THE NARRATOR:")
-    manually_add_to_transcript("BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.")
-    manually_add_to_transcript("ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.")
-    manually_add_to_transcript()
+    add_to_narrator_transcript()
+    add_to_narrator_transcript("IMPORTANT NOTES TO THE NARRATOR:")
+    add_to_narrator_transcript(
+        "BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED."
+    )
+    add_to_narrator_transcript(
+        "ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS."
+    )
+    add_to_narrator_transcript()
 
     n_turns_elapsed = 0
 
@@ -174,52 +231,82 @@ def main():
         user_inp = input()
         n_turns_elapsed += 1
 
-        is_lethal_action = decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO)
+        is_lethal_action = decider_utils.yesno(
+            QUESTION_IS_ACTION_LIKELY_LETHAL, user_inp, default=NO
+        )
         if is_lethal_action:
-            return game_over_fail("You have taken an action that is likely to result in killing someone.")
+            return game_over_fail(
+                "You have taken an action that is likely to result in killing someone."
+            )
 
-        is_running_away = decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO)
+        is_running_away = decider_utils.yesno(
+            QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO
+        )
         if is_running_away:
             p("Invalid entry.  You cannot outrun these bandits.")
             continue
 
-        is_using_magic = decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO)
+        is_using_magic = decider_utils.yesno(
+            QUESTION_IS_ACTION_MAGIC, user_inp, default=NO
+        )
         if is_using_magic:
-            p("Invalid entry.  You are not a spellcaster and have no magic items except your revolver.")
+            p(
+                "Invalid entry.  You are not a spellcaster and have no magic items except your revolver."
+            )
             continue
 
-        manually_add_to_transcript(user_inp)
+        add_to_narrator_transcript(user_inp)
         p()
 
-        manually_add_to_transcript()
-        manually_add_to_transcript("What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!")
+        add_to_narrator_transcript()
+        add_to_narrator_transcript(
+            "What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!"
+        )
 
         full_transcript = read_global_transcript()
         new_full_transcript = elaborate(
             full_transcript,
-            prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
-            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+            prevent_user_from_reaching_home=n_turns_elapsed
+            < N_TURNS_REQUIRED_TO_REACH_HOME,
+            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed
+            < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
         )
         new_part = new_full_transcript.replace(full_transcript, "")
 
         p(new_part)
 
-        did_user_die = decider_utils.yesno(QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO)
+        did_user_die = decider_utils.yesno(
+            QUESTION_DID_PROTAGONIST_PERISH, new_part, default=NO
+        )
         if did_user_die:
             return game_over_fail("You have died.")
 
-        did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO)
-        did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO)
+        did_user_kill = decider_utils.yesno(
+            QUESTION_DID_PROTAGONIST_KILL, new_part, default=NO
+        )
+        did_user_kill = did_user_kill or decider_utils.yesno(
+            QUESTION_DID_PROTAGONIST_KILL, new_full_transcript, default=NO
+        )
         if did_user_kill:
             return game_over_fail("You have taken a life.")
 
-        is_user_home = decider_utils.yesno(QUESTION_IS_USER_HOME, new_full_transcript, default=NO)
+        is_user_home = decider_utils.yesno(
+            QUESTION_IS_USER_HOME, new_full_transcript, default=NO
+        )
         if is_user_home:
-            has_at_least_30_gold = decider_utils.yesno(QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD, new_full_transcript, default=NO)
+            has_at_least_30_gold = decider_utils.yesno(
+                QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD,
+                new_full_transcript,
+                default=NO,
+            )
             if has_at_least_30_gold:
-                return game_over_victory("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
+                return game_over_victory(
+                    "You made it home with 30+ gold!  Your family is grateful and you all hug in celebration."
+                )
             else:
-                return game_over_fail("You reached home with less than 30 gold - too little for your family to live on.")
+                return game_over_fail(
+                    "You reached home with less than 30 gold - too little for your family to live on."
+                )
 
 
 if __name__ == "__main__":
