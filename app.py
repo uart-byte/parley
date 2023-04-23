@@ -11,6 +11,7 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 
 LINE_WIDTH = 80
 STR_AWAITING_USER_INPUT = "Awaiting user input:"
+NTURNS_START_OVER = -1
 
 G_N_TURNS_ELAPSED_KEY = "G_N_TURNS_ELAPSED_KEY"
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
@@ -163,10 +164,12 @@ You turn around to find two bandits blocking your path, each armed with a magica
 What do you do?"""
 
 
-if G_USER_TRANSCRIPT_KEY not in st.session_state:
-    # New user
+if G_N_TURNS_ELAPSED_KEY not in st.session_state or st.session_state[G_N_TURNS_ELAPSED_KEY] == NTURNS_START_OVER:
+    # New user or a user is starting over.
     st.session_state[G_N_TURNS_ELAPSED_KEY] = 0
     st.session_state[G_GAME_OVER_KEY] = False
+    st.session_state[G_USER_TRANSCRIPT_KEY] = ""
+    st.session_state[G_NARRATOR_TRANSCRIPT_KEY] = ""
 
     p()
     p("-----------------------------------  -------------------")
@@ -190,6 +193,13 @@ if G_USER_TRANSCRIPT_KEY not in st.session_state:
     add_to_narrator_transcript()
 
     p(STR_AWAITING_USER_INPUT)
+
+
+yes_start_over = st.button("Start Over")
+if yes_start_over:
+    st.session_state[G_N_TURNS_ELAPSED_KEY] = NTURNS_START_OVER
+    st.experimental_rerun()
+    st.stop()  # This statement won't be reached.  I just want to make it obvious that control flow never gets past here
 
 
 st.text(apply_word_wrap(retrieve_user_transcript()))
