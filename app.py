@@ -142,7 +142,7 @@ with demo:
     gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999, elem_classes="parleygame")
 
     gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
-    
+
     gr_user_input = gr.Textbox(label="", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
 
