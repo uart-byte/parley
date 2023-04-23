@@ -199,7 +199,7 @@ if is_game_over:
     pass # TODO button to try again
 
 else:
-    user_inp = text_area_wrapper.text_area("Type your next action, then press Cmd-Enter.", value="", key=random.randint(0, 1073741824))
+    user_inp = st.text_area("Type your next action, then press Cmd-Enter.", value="", key=random.randint(0, 1073741824))
 
     if user_inp != "":
         # Once the user has submitted their latest action
