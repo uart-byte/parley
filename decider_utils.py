@@ -1,5 +1,4 @@
 import openai
-from debug_logger import debug_print
 
 YES = True
 NO = False
@@ -7,9 +6,7 @@ NO = False
 
 def yesno(question, text, default):
     prompt = text + "\n\n" + question
-    debug_print()
-    debug_print()
-    debug_print(prompt)
+
     hopefully_word_yes_or_no = openai.Completion.create(
         engine="text-davinci-002",
         prompt=prompt,
@@ -21,7 +18,6 @@ def yesno(question, text, default):
     )["choices"][0]["text"]
 
     hopefully_word_yes_or_no = hopefully_word_yes_or_no.upper().strip()
-    debug_print(hopefully_word_yes_or_no)
 
     result = default
 
@@ -33,5 +29,4 @@ def yesno(question, text, default):
         if hopefully_word_yes_or_no.startswith("Y"):
             result = YES
 
-    debug_print(f"Returning {result}")
     return result

@@ -30,3 +30,27 @@ ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGE
 
 AWAITING_INPUT = '''Awaiting user input:
 '''
+
+
+# You can check if S_GAME_OVER is in either transcript, to see if the game is over.
+S_GAME_OVER = "GAME OVER"
+
+def game_over_victory_txt(s_reason):
+  return f'''
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!  {S_GAME_OVER}.                                                                                    !!
+!!  YOU WIN!                                                                                      !!
+!!  {s_reason}
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+To play again, please refresh the page.'''
+
+
+def game_over_fail_txt(s_reason):
+  return f'''//################################################################################################//
+##  {S_GAME_OVER}.                                                                                    &&
+##  {sreason}
+##  YOU LOSE.                                                                                     &&
+//################################################################################################//
+
+To play again, please refresh the page.'''
