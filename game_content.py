@@ -21,11 +21,16 @@ You turn around to find two bandits blocking your path, each armed with a magica
 What do you do?
 '''
 
-NOTES_TO_THE_NARRATOR = '''
+NOTES_TO_THE_NARRATOR_AT_START = '''
 IMPORTANT NOTES TO THE NARRATOR:
 BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.
 ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.
 
+'''
+
+NOTES_TO_THE_NARRATOR_EVERY_TIME = '''
+
+What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!
 '''
 
 AWAITING_INPUT = '''Awaiting user input:
@@ -43,7 +48,8 @@ def game_over_victory_txt(s_reason):
 !!  {s_reason}
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-To play again, please refresh the page.'''
+To play again, please refresh the page.
+'''
 
 
 def game_over_fail_txt(s_reason):
@@ -53,4 +59,9 @@ def game_over_fail_txt(s_reason):
 ##  YOU LOSE.                                                                                     &&
 //################################################################################################//
 
-To play again, please refresh the page.'''
+To play again, please refresh the page.
+'''
+
+
+N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
+N_TURNS_REQUIRED_TO_REACH_HOME = 6

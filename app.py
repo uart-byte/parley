@@ -1,26 +1,16 @@
 import gradio as gr
-from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR, AWAITING_INPUT
+from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT
 from game_content import game_over_victory_txt, game_over_fail_txt, S_GAME_OVER
+from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURNS_REQUIRED_TO_REACH_HOME
 import decider_utils
 from decider_utils import YES, NO
-from decider_questions import *   # QUESTION_IS_USER_HOME and other questions
-
-
-
-
-
+from decider_questions import *   # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
 
 
 
 
 N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
-
-
-
-N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
-N_TURNS_REQUIRED_TO_REACH_HOME = 6
-
 
 def elaborate(
     str_beginning,
@@ -79,19 +69,34 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     finally_add2_both_tscripts = ""
 
     if s_user_input == "":
-        s_user_transcript += "You must choose an action."
+        s_user_transcript += "You must choose an action.\n"
 
     elif S_GAME_OVER in s_narr_transcript:
-        s_user_transcript += "Sorry, the game is already over.  To play again, please refresh the page."
+        s_user_transcript += "Sorry, the game is already over.  To play again, please refresh the page.\n"
 
     elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
+    elif decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO):
+        finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
+
+    elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO):
+        finally_add2_both_tscripts += "Invalid entry.  You are not a spellcaster and have no magic items except your revolver.\n"
+
     else:
         # User input accepted.
-
         n_turns_elapsed += 1
 
+        s_narr_transcript += s_user_input + "\n"
+        s_narr_transcript += NOTES_TO_THE_NARRATOR_EVERY_TIME
+
+        s_new_narr_transcript = elaborate(
+            full_transcript,
+            prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
+            require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+        )
+
+        # End of code block User input accepted.
 
 
     s_n_turns_elapsed = str(n_turns_elapsed)
@@ -106,7 +111,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
 demo = gr.Blocks()
 
 with demo:
-    s_narr_transcript = GAME_INTRO + NOTES_TO_THE_NARRATOR + AWAITING_INPUT
+    s_narr_transcript = GAME_INTRO + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
     s_user_transcript = GAME_INTRO + AWAITING_INPUT
 
     gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999) #, visible=False)
