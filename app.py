@@ -132,7 +132,7 @@ with demo:
     s_narr_transcript = GAME_INTRO + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
     s_user_transcript = GAME_INTRO + AWAITING_INPUT
 
-    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999)  # , visible=False)
+    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999, visible=False)
     gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999)
 
     gr_markdown1 = gr.Markdown("After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.")
