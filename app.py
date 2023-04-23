@@ -11,10 +11,13 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 LINE_WIDTH = 80
 STR_AWAITING_USER_INPUT = "Awaiting user input:"
 
+WIDGET_KEY_FOR_USER_TEXTAREA = 1
+
 G_N_TURNS_ELAPSED_KEY = "G_N_TURNS_ELAPSED_KEY"
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
 G_NARRATOR_TRANSCRIPT_KEY = "G_NARRATOR_TRANSCRIPT_KEY"
 G_GAME_OVER_KEY = "G_GAME_OVER_KEY"
+
 
 
 # ui() means print only to the user.
@@ -62,7 +65,9 @@ def apply_word_wrap(multi_paragraph_str):
 
 
 def continue_main_game_loop():
-    p(STR_AWAITING_USER_INPUT)
+    is_game_over = st.session_state[G_GAME_OVER_KEY]
+    if not is_game_over:
+        p(STR_AWAITING_USER_INPUT)
     st.experimental_rerun()
     st.stop()  # This statement won't be reached.  I just want to make it obvious that control flow never gets past this function.
 
@@ -194,10 +199,11 @@ if is_game_over:
     pass # TODO button to try again
 
 else:
-    user_inp = st.text_area("Type your next action, then press Cmd-Enter.")
+    user_inp = st.text_area("Type your next action, then press Cmd-Enter.", value="")
 
     if user_inp != "":
         # Once the user has submitted their latest action
+        user_inp = user_inp.replace("\n", " ")
         ui(user_inp)
 
         n_turns_elapsed = st.session_state[G_N_TURNS_ELAPSED_KEY] + 1
