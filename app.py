@@ -100,7 +100,7 @@ QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to resul
 QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
 QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
 QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
-QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, did the protagonist perish?"
+QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, does the protagonist get killed?"
 
 N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
 N_TURNS_REQUIRED_TO_REACH_HOME = 6
