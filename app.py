@@ -11,8 +11,6 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 LINE_WIDTH = 80
 STR_AWAITING_USER_INPUT = "Awaiting user input:"
 
-WIDGET_KEY_FOR_USER_TEXTAREA = 1
-
 G_N_TURNS_ELAPSED_KEY = "G_N_TURNS_ELAPSED_KEY"
 G_USER_TRANSCRIPT_KEY = "G_USER_TRANSCRIPT_KEY"
 G_NARRATOR_TRANSCRIPT_KEY = "G_NARRATOR_TRANSCRIPT_KEY"
@@ -199,10 +197,15 @@ if is_game_over:
     pass # TODO button to try again
 
 else:
-    user_inp = st.text_area("Type your next action, then press Cmd-Enter.", value="")
+    text_area_wrapper = st.empty()
+
+    user_inp = text_area_wrapper.text_area("Type your next action, then press Cmd-Enter.", value="")
 
     if user_inp != "":
         # Once the user has submitted their latest action
+
+        text_area_wrapper.empty()
+
         user_inp = user_inp.replace("\n", " ")
         ui(user_inp)
 
