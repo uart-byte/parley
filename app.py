@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import random
 import textwrap
 import openai
 import decider_utils
@@ -24,6 +25,7 @@ def ui(s=""):
     if G_USER_TRANSCRIPT_KEY in st.session_state:
         user_transcript = st.session_state[G_USER_TRANSCRIPT_KEY]
     st.session_state[G_USER_TRANSCRIPT_KEY] = user_transcript + s + "\n"
+    st.text(s)
 
 
 # this adds to only the narrator transcript
@@ -197,9 +199,9 @@ if is_game_over:
     pass # TODO button to try again
 
 else:
-    text_area_wrapper = st.empty()
+    text_area_wrapper = st.empty(key=random.randint(0, 1073741824))
 
-    user_inp = text_area_wrapper.text_area("Type your next action, then press Cmd-Enter.", value="")
+    user_inp = text_area_wrapper.text_area("Type your next action, then press Cmd-Enter.", value="", key=random.randint(0, 1073741824))
 
     if user_inp != "":
         # Once the user has submitted their latest action
