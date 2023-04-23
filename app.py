@@ -1,16 +1,17 @@
+import os
+import openai
 import gradio as gr
-from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT
+from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT, NOTES_TO_THE_NARRATOR_EVERY_TIME
 from game_content import game_over_victory_txt, game_over_fail_txt, S_GAME_OVER
 from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURNS_REQUIRED_TO_REACH_HOME
 import decider_utils
 from decider_utils import YES, NO
-from decider_questions import *   # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
-
-
+from decider_questions import *  # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
 
 
 N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
+
 
 def elaborate(
     str_beginning,
@@ -54,15 +55,6 @@ def elaborate(
     return str_beginning + longest_completion
 
 
-
-
-
-
-
-
-
-
-
 def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_user_input):
     n_turns_elapsed = int(s_n_turns_elapsed)
 
@@ -77,36 +69,62 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
-    elif decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, user_inp, default=NO):
+    elif decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, s_user_input, default=NO):
         finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
 
-    elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, user_inp, default=NO):
+    elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, s_user_input, default=NO):
         finally_add2_both_tscripts += "Invalid entry.  You are not a spellcaster and have no magic items except your revolver.\n"
 
     else:
         # User input accepted.
         n_turns_elapsed += 1
-
+        s_user_transcript += s_user_input + "\n"
         s_narr_transcript += s_user_input + "\n"
         s_narr_transcript += NOTES_TO_THE_NARRATOR_EVERY_TIME
 
         s_new_narr_transcript = elaborate(
-            full_transcript,
+            s_narr_transcript,
             prevent_user_from_reaching_home=n_turns_elapsed < N_TURNS_REQUIRED_TO_REACH_HOME,
             require_user_to_be_still_engaged_with_bandits=n_turns_elapsed < N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
         )
 
-        # End of code block User input accepted.
+        s_new_part = s_new_narr_transcript.replace(s_narr_transcript, "")
 
+        s_narr_transcript += s_new_part + "\n"
+        s_user_transcript += s_new_part + "\n"
+
+
+        did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, s_new_part, default=NO)
+        did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, s_narr_transcript, default=NO)
+        if did_user_kill:
+            finally_add2_both_tscripts += game_over_fail_txt("You have taken a life.")
+
+        else:
+            is_user_home = decider_utils.yesno(QUESTION_IS_USER_HOME, s_narr_transcript, default=NO)
+            if is_user_home:
+                has_at_least_30_gold = decider_utils.yesno(QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD, s_narr_transcript, default=NO)
+                if has_at_least_30_gold:
+                    finally_add2_both_tscripts += game_over_victory_txt("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
+                else:
+                    finally_add2_both_tscripts += game_over_fail_txt("You reached home with less than 30 gold - too little for your family to live on.")
+
+
+        # End of code block User input accepted.
 
     s_n_turns_elapsed = str(n_turns_elapsed)
     s_user_input = ""
-    
+
+    if S_GAME_OVER not in finally_add2_both_tscripts and S_GAME_OVER not in s_narr_transcript:
+        finally_add2_both_tscripts += AWAITING_INPUT
+
     s_narr_transcript += finally_add2_both_tscripts
     s_user_transcript += finally_add2_both_tscripts
 
     return [s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_user_input]
 
+
+openai.organization = os.environ.get("OPENAI_ORGANIZATION")
+openai.api_key = os.environ.get("OPENAI_KEY")
 
 demo = gr.Blocks()
 
@@ -114,7 +132,7 @@ with demo:
     s_narr_transcript = GAME_INTRO + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
     s_user_transcript = GAME_INTRO + AWAITING_INPUT
 
-    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999) #, visible=False)
+    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999)  # , visible=False)
     gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999)
 
     gr_markdown1 = gr.Markdown("After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.")
@@ -122,9 +140,9 @@ with demo:
     gr_button1 = gr.Button(value="Run Next Turn")
 
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False)
-    
-    gr_button1.click(fn=run_1_game_turn,
-        inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input],
-        outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input])
+
+    gr_button1.click(
+        fn=run_1_game_turn, inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input], outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input]
+    )
 
 demo.launch()
