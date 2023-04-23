@@ -69,7 +69,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
-    elif decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, s_user_input, default=NO):
+    elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) and decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, s_user_input, default=NO):
         finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
 
     elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, s_user_input, default=NO):
@@ -93,7 +93,6 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
         s_narr_transcript += s_new_part + "\n"
         s_user_transcript += s_new_part + "\n"
 
-
         did_user_kill = decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, s_new_part, default=NO)
         did_user_kill = did_user_kill or decider_utils.yesno(QUESTION_DID_PROTAGONIST_KILL, s_narr_transcript, default=NO)
         if did_user_kill:
@@ -107,7 +106,6 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
                     finally_add2_both_tscripts += game_over_victory_txt("You made it home with 30+ gold!  Your family is grateful and you all hug in celebration.")
                 else:
                     finally_add2_both_tscripts += game_over_fail_txt("You reached home with less than 30 gold - too little for your family to live on.")
-
 
         # End of code block User input accepted.
 
