@@ -208,13 +208,13 @@ if is_game_over:
     pass # TODO button to try again
 
 else:
-    user_inp = st.text_area("Type your next action, then press Cmd-Enter.", value="", key=random.randint(0, 1073741824))
+    user_inp = st.text_input("Type your next action, then press Cmd-Enter.", value="")
 
     if user_inp != "":
         # Once the user has submitted their latest action
 
 
-        user_inp = user_inp.replace("\n", " ")
+        # user_inp = user_inp.replace("\n", " ")
         ui(user_inp)
 
         n_turns_elapsed = st.session_state[G_N_TURNS_ELAPSED_KEY] + 1
