@@ -131,7 +131,7 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 demo = gr.Blocks()
 
 with demo:
-    game_intro = GAME_INTRO_CHOICES[18] # random.choice(GAME_INTRO_CHOICES)
+    game_intro = random.choice(GAME_INTRO_CHOICES)
 
     s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
     s_user_transcript = game_intro + AWAITING_INPUT
