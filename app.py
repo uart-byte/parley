@@ -36,15 +36,6 @@ AWAITING_INPUT = '''Awaiting user input:
 
 def run_1_game_turn(s_narrator_transcript, s_n_turns_elapsed, s_print_output, s_user_input):
     n_turns_elapsed = int(s_n_turns_elapsed)
-
-    if s_narrator_transcript == "":
-        # New user or a user is starting over.
-        
-        s_print_output += GAME_INTRO
-        s_narrator_transcript += GAME_INTRO
-
-        s_narrator_transcript += NOTES_TO_THE_NARRATOR
-
     n_turns_elapsed += 1
 
     s_n_turns_elapsed = str(n_turns_elapsed)
