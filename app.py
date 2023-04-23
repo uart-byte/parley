@@ -1,7 +1,7 @@
-import os
+import os, random
 import openai
 import gradio as gr
-from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT, NOTES_TO_THE_NARRATOR_EVERY_TIME
+from game_content import GAME_INTRO_1, GAME_INTRO_2, GAME_INTRO_3, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT, NOTES_TO_THE_NARRATOR_EVERY_TIME
 from game_content import game_over_victory_txt, game_over_fail_txt, S_GAME_OVER
 from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURNS_REQUIRED_TO_REACH_HOME
 import decider_utils
@@ -127,8 +127,10 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 demo = gr.Blocks()
 
 with demo:
-    s_narr_transcript = GAME_INTRO + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
-    s_user_transcript = GAME_INTRO + AWAITING_INPUT
+    game_intro = random.choice([GAME_INTRO_1, GAME_INTRO_2, GAME_INTRO_3])
+
+    s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
+    s_user_transcript = game_intro + AWAITING_INPUT
 
     gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999, visible=False)
     gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999)
