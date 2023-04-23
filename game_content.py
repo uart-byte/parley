@@ -1,3 +1,7 @@
+INITIAL_WELCOME_TEXT = """Welcome to Parley - the role playing game where you negotiate with bandits!
+To begin, type "begin" into the text input box below, then click the Run Next Turn button:"""
+
+
 GAME_HEADER = """-----------------------------------  ------------------ ----------------
 - ----- -----                                                                                         -
 - PARLEY -                                                                                        -
@@ -11,13 +15,13 @@ GAME_HEADER = """-----------------------------------  ------------------ -------
 
 """
 
-GAME_INTRO_CHOICES = []
-
 # Generating a new scenario is an automatic process but takes something like 2-8 minutes.
 # Thus, I used the command line version of the game
 # https://github.com/uart-byte/parley/tree/working-cmd-line
 # to pre-generate 20 scenarios.
 # That way the web version of the game can load instantly
+
+GAME_INTRO_CHOICES = []
 
 # Intro_1.txt
 GAME_INTRO_CHOICES.append(

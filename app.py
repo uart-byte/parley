@@ -3,6 +3,7 @@
 import os, random
 import openai
 import gradio as gr
+from game_content import INITIAL_WELCOME_TEXT
 from game_content import GAME_INTRO_CHOICES, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT, NOTES_TO_THE_NARRATOR_EVERY_TIME
 from game_content import game_over_victory_txt, game_over_fail_txt, S_GAME_OVER
 from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURNS_REQUIRED_TO_REACH_HOME
@@ -63,7 +64,17 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
 
     finally_add2_both_tscripts = ""
 
-    if s_user_input == "":
+    if n_turns_elapsed == 0 and s_narr_transcript == "":
+        # New game.
+        # I learned the hard way that we have to do the random choice thing from within the game code;
+        # because if we just put it inside the "with demo:" block,
+        # then the gradio server only runs the random choice once per reboot.
+        game_intro = random.choice(GAME_INTRO_CHOICES)
+        s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START
+        s_user_transcript = game_intro
+
+
+    elif s_user_input == "":
         s_user_transcript += "You must choose an action.\n"
 
     elif S_GAME_OVER in s_narr_transcript:
@@ -131,15 +142,10 @@ openai.api_key = os.environ.get("OPENAI_KEY")
 demo = gr.Blocks()
 
 with demo:
-    game_intro = random.choice(GAME_INTRO_CHOICES)
-
-    s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
-    s_user_transcript = game_intro + AWAITING_INPUT
-
     gr_top_of_scr_padding = gr.HTML(TOP_OF_SCREEN_PADDING_DIV)
 
-    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999, visible=False)
-    gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999, elem_classes="parleygame")
+    gr_narr_transcript = gr.Textbox(label="", value="", interactive=False, max_lines=9999, visible=False)
+    gr_user_transcript = gr.Textbox(label="", value=INITIAL_WELCOME_TEXT, interactive=False, max_lines=9999, elem_classes="parleygame")
 
     gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
 
