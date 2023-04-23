@@ -1,3 +1,5 @@
+# formatted with python black, line length 200
+
 import os, random
 import openai
 import gradio as gr
@@ -7,6 +9,7 @@ from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURN
 import decider_utils
 from decider_utils import YES, NO
 from decider_questions import *  # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
+from webpage import PAGE_STYLING_JS, PLEASE_BE_PATIENT_DIV, TOP_OF_SCREEN_PADDING_DIV
 
 
 N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
@@ -124,6 +127,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
 openai.organization = os.environ.get("OPENAI_ORGANIZATION")
 openai.api_key = os.environ.get("OPENAI_KEY")
 
+
 demo = gr.Blocks()
 
 with demo:
@@ -132,10 +136,13 @@ with demo:
     s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START + AWAITING_INPUT
     s_user_transcript = game_intro + AWAITING_INPUT
 
-    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999, visible=False)
-    gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999)
+    gr_top_of_scr_padding = gr.HTML(TOP_OF_SCREEN_PADDING_DIV)
 
-    gr_markdown1 = gr.Markdown("After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.")
+    gr_narr_transcript = gr.Textbox(label="", value=s_narr_transcript, interactive=False, max_lines=9999, visible=False)
+    gr_user_transcript = gr.Textbox(label="", value=s_user_transcript, interactive=False, max_lines=9999, elem_classes="parleygame")
+
+    gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
+    
     gr_user_input = gr.Textbox(label="", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
 
@@ -144,5 +151,9 @@ with demo:
     gr_button1.click(
         fn=run_1_game_turn, inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input], outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input]
     )
+
+    # See https://discuss.huggingface.co/t/gradio-html-component-with-javascript-code-dont-work/37316/2
+    demo.load(None, None, None, _js=PAGE_STYLING_JS)
+
 
 demo.launch()
