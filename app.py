@@ -1,37 +1,82 @@
-# import uuid
 import gradio as gr
+from game_content import GAME_INTRO, NOTES_TO_THE_NARRATOR, AWAITING_INPUT
+import decider_utils
+from decider_utils import YES, NO
 
-GAME_INTRO = '''-----------------------------------  -------------------
-- ----- -----                                          -
-- PARLEY -                                             -
-- -----                                                -
--   The one-of-a-kind role playing game                -
--   that tests your ability to achieve                 -
--   your objective without killing                     -
--   any sentient beings.                               -
-- -----                                                -
--------------- ------------------------------- ------- -
 
-The year is 603, in an alternate reality fantasy world with a little bit of magic, although you yourself cannot cast spells and the only magical item you own is your revolver.  Magically-powered firearms are common, especially six-shooter revolvers, which you and almost everyone carries.  You are a seasonal laborer making a once a year summer trek from Tibet across the Himalayas to Nepal to return home to your family with your year's worth of wages which is 100 gold coins.  It is very common to be waylaid by bandits who will try to steal some of your gold, or to take some of it for 'protection'.  If you make it home with less than 30 coins or do not make it home at all, your family will not be able to afford food to eat.
 
-You have been traveling for weeks now and you are nearing the end of your journey. You can see the border between Tibet and Nepal in the distance, but before you can cross it, you must pass through a narrow mountain pass. As you enter the pass, you hear a voice call out from behind you.
 
-"Halt! This is our territory now." 
 
-You turn around to find two bandits blocking your path, each armed with a magical revolver. They demand that you hand over half of your gold coins as 'protection money'. You know that if you give them what they want, there's no guarantee that they won't just take all of it anyway. On the other hand, if you refuse to pay up then they could easily shoot you down and take all of your coins anyway. 
 
-What do you do?
-'''
 
-NOTES_TO_THE_NARRATOR = '''
-IMPORTANT NOTES TO THE NARRATOR:
-BANDITS ARE TOUGH, POWERFUL CHARACTERS THAT CANNOT BE EASILY DEFEATED OR FOOLED.
-ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGEROUS WILD ANIMALS, OR ENCOUNTERING MORE BANDITS.
 
-'''
 
-AWAITING_INPUT = '''Awaiting user input:
-'''
+
+N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
+MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
+
+QUESTION_IS_USER_HOME = "At the end of the above story, is the protagonist located at their destination?"
+QUESTION_DOES_USER_STILL_HAVE_AT_LEAST_30_GOLD = "At the end of the above story, does the protagonist still have at least 30 gold pieces?"
+QUESTION_IS_USER_ENGAGED_WITH_BANDITS = "At the end of the above story, is the protagonist currently still engaged in a standoff with bandits?"
+QUESTION_IS_ACTION_LIKELY_LETHAL = "Is the action just described likely to result in anyone dying?"
+QUESTION_IS_ACTION_RUNNING_AWAY = "Is the action just described an example of running away by sprinting?"
+QUESTION_IS_ACTION_MAGIC = "Is the action just described an example of using supernatural magical spells / potions / etc?"
+QUESTION_DID_PROTAGONIST_KILL = "In the story segment above, did the protagonist kill anyone?"
+QUESTION_DID_PROTAGONIST_PERISH = "In the story segment above, does the protagonist get killed?"
+
+N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER = 3
+N_TURNS_REQUIRED_TO_REACH_HOME = 6
+
+
+def elaborate(
+    str_beginning,
+    prevent_user_from_reaching_home=True,
+    require_user_to_be_still_engaged_with_bandits=False,
+):
+
+    longest_completion = ""
+
+    while len(longest_completion) < MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING:
+        completions = openai.Completion.create(
+            engine="text-davinci-003",
+            prompt=str_beginning,
+            temperature=0.5,
+            max_tokens=4000 - int(len(str_beginning) / 4),
+            frequency_penalty=0.5,
+            presence_penalty=0.5,
+            n=N_COMPLETIONS_WHEN_ELABORATING,
+        )["choices"]
+
+        for i in range(0, N_COMPLETIONS_WHEN_ELABORATING):
+            completion = completions[i]["text"]
+            # debug_print(completion)
+
+            allowed = True
+            if prevent_user_from_reaching_home:
+                does_the_user_reach_home = decider_utils.yesno(QUESTION_IS_USER_HOME, str_beginning + completion, default=YES)
+                allowed = not does_the_user_reach_home
+
+            if require_user_to_be_still_engaged_with_bandits:
+                is_user_engaged_with_bandits = decider_utils.yesno(
+                    QUESTION_IS_USER_ENGAGED_WITH_BANDITS,
+                    str_beginning + completion,
+                    default=YES,
+                )
+                allowed = allowed and is_user_engaged_with_bandits
+
+            if allowed and len(completion) > len(longest_completion):
+                longest_completion = completion
+
+    return str_beginning + longest_completion
+
+
+
+
+
+
+
+
+
 
 
 def run_1_game_turn(s_narrator_transcript, s_n_turns_elapsed, s_print_output, s_user_input):
@@ -50,8 +95,9 @@ with demo:
 
     gr_narrator_transcript = gr.Textbox(value=GAME_INTRO + NOTES_TO_THE_NARRATOR + AWAITING_INPUT, interactive=False) #, visible=False)
     gr_n_turns_elapsed = gr.Textbox(value="0", interactive=False) #, visible=False)
-    gr_print_output = gr.Textbox(label="", value=GAME_INTRO + AWAITING_INPUT, interactive=False)
-    gr_user_input = gr.Textbox(label="", value="", interactive=True)
+    gr_print_output = gr.Textbox(label="", value=GAME_INTRO + AWAITING_INPUT, interactive=False, max_lines=9999)
+    gr_markdown1 = gr.Markdown("After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.")
+    gr_user_input = gr.Textbox(label="", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
     
     gr_button1.click(fn=run_1_game_turn,
