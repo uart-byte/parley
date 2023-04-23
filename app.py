@@ -26,7 +26,6 @@ def ui(s=""):
     if G_USER_TRANSCRIPT_KEY in st.session_state:
         user_transcript = st.session_state[G_USER_TRANSCRIPT_KEY]
     st.session_state[G_USER_TRANSCRIPT_KEY] = user_transcript + s + "\n"
-    st.text(s)
 
 
 # this adds to only the narrator transcript
