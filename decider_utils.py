@@ -4,10 +4,16 @@ import decider_questions
 YES = True
 NO = False
 
+g_decider_utils_dbg_printing = False
 
 def yesno(question, text, default):
+    global g_decider_utils_dbg_printing
+
     prompt = text + "\n\n" + question
-    print(prompt)
+
+    if g_decider_utils_dbg_printing:
+        print(prompt)
+
     hopefully_word_yes_or_no = openai.Completion.create(
         engine="text-davinci-002",
         prompt=prompt,
@@ -17,7 +23,10 @@ def yesno(question, text, default):
         presence_penalty=0,
         n=1,
     )["choices"][0]["text"]
-    print(hopefully_word_yes_or_no)
+
+    if g_decider_utils_dbg_printing:
+        print(hopefully_word_yes_or_no)
+
     hopefully_word_yes_or_no = hopefully_word_yes_or_no.upper().strip()
 
     result = default
@@ -42,8 +51,22 @@ def special_case_is_running_away(text):
     for keyword in ["run", "away", "hide", "escape", "flee", "sprint", "teleport"]:
         if keyword in text.lower():
             might_really_be_fleeing = True
+            break
 
     if might_really_be_fleeing:
         return yesno(decider_questions.QUESTION_IS_ACTION_RUNNING_AWAY, text, default=NO)
     else:
         return NO
+
+def special_case_is_magic(text):
+    is_magic = False
+    for keyword in ["magic", "spell", "fly", "invisib", "levitat", "teleport", "dragon", "genie", "fairy", "demon", "devil", "angel", "griffin", "wand"]:
+        if keyword in text.lower():
+            is_magic = True
+            break
+
+    if is_magic:
+        return YES
+    else:
+        return yesno(decider_questions.QUESTION_IS_ACTION_MAGIC, text, default=NO)
+

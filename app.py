@@ -85,7 +85,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) and decider_utils.special_case_is_running_away(s_user_input):
         finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
 
-    elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, s_user_input, default=NO):
+    elif decider_utils.special_case_is_magic(s_user_input):
         finally_add2_both_tscripts += "Invalid entry.  You are not a spellcaster and have no magic items except your revolver.\n"
 
     else:
