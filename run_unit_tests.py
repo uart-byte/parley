@@ -22,6 +22,7 @@ assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the 
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the wolves", default=NO)
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the wolves", default=NO)
 
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "say wait!  I'm sure we can negotiate a fair price for your protection", default=NO)
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "I fire a shot into the air!", default=NO)
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "challenge him to a duel", default=NO)
 # assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "I challenge him to a duel.", default=NO)
