@@ -83,7 +83,8 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
-    elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) and decider_utils.yesno(QUESTION_IS_ACTION_RUNNING_AWAY, s_user_input, default=NO):
+    elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) \
+    and decider_utils.special_case_is_running_away(s_user_input):
         finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
 
     elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, s_user_input, default=NO):

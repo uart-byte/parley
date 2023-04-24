@@ -1,4 +1,5 @@
 import openai
+import decider_questions
 
 YES = True
 NO = False
@@ -30,3 +31,18 @@ def yesno(question, text, default):
             result = YES
 
     return result
+
+
+# In certain cases, I need more special-case logic in order to behave correctly,
+# which we verify using the unit tests in run_unit_tests.py:
+
+def special_case_is_running_away(text):
+    might_really_be_fleeing = False
+    for keyword in ["run", "away", "hide", "escape", "flee", "sprint", "teleport"]:
+        if keyword in text.lower():
+            might_really_be_fleeing = True
+
+    if might_really_be_fleeing:
+        return yesno(decider_questions.QUESTION_IS_ACTION_RUNNING_AWAY, text, default=NO)
+    else:
+        return NO
