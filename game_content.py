@@ -408,7 +408,7 @@ ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGE
 
 NOTES_TO_THE_NARRATOR_EVERY_TIME = """
 
-What happens in JUST THE NEXT THREE SECONDS? DO NOT say that the protagonist continues home!  That's too easy!  Make this game hard for the player!!
+What happens in JUST THE NEXT THREE SECONDS?
 """
 
 AWAITING_INPUT = """Awaiting user input:
