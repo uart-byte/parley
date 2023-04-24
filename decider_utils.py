@@ -136,7 +136,7 @@ def special_case_is_action_lethal(text):
     text_l = text.lower()
 
     is_negotiation = False
-    for keyword in ["say", "ask", "negotiat", "warn", "fair", "consider", "please", "family", "children", "challenge", "request", "inquire", "price", "gold", "coin", "away"]:
+    for keyword in ["say", "ask", "negotiat", "warn", "fair", "consider", "please", "family", "children", "challenge", "request", "inquire", "price", "gold", "coin", "away", "don't shoot", "dont shoot"]:
         if keyword in text_l:
             is_negotiation = True
             break
