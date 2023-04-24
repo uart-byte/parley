@@ -15,6 +15,7 @@ from game_content import (
     S_GAME_OVER,
     N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
     N_TURNS_REQUIRED_TO_REACH_HOME,
+    AFTER_N_TURNS_MAKE_IT_EASY_TO_WIN,
 )
 import decider_utils
 from decider_utils import YES, NO
