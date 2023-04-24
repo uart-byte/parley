@@ -160,13 +160,11 @@ with demo:
     gr_narr_transcript = gr.Textbox(label="", value="", interactive=False, max_lines=9999, visible=False)
     gr_user_transcript = gr.Textbox(label="", value=INITIAL_WELCOME_TEXT, interactive=False, max_lines=9999, elem_classes="parleygame")
 
-    gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
-
     gr_user_input = gr.Textbox(label="Input:", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
 
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False, visible=False)
-
+    gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
     gr_music_player = gr.HTML(MUSIC_PLAYER)
 
     gr_button1.click(
