@@ -59,6 +59,7 @@ assert NO == decider_utils.special_case_is_action_lethal("aim at the bandit")
 assert NO == decider_utils.special_case_is_action_lethal("aim at the bandits")
 
 # In this game we will have killing animals be allowed, even though I personally am a big propent of animal sentience.
+# assert NO == decider_utils.special_case_is_action_lethal("shoot the lead horse")  # Another failing test case
 assert NO == decider_utils.special_case_is_action_lethal("fire at the bear")
 assert NO == decider_utils.special_case_is_action_lethal("shoot the bear")
 # assert NO == decider_utils.special_case_is_action_lethal("shoot it")  # This test is failing
