@@ -13,16 +13,8 @@ decider_utils.g_decider_utils_dbg_printing = True
 
 # Begin tests:
 
-# In this game we will have killing animals be allowed, even though I personally am a big propent of animal sentience.
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the bear", default=NO)
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the bear", default=NO)
-# assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot it", default=NO)
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the wolf", default=NO)
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the wolf", default=NO)
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the wolves", default=NO)
-assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the wolves", default=NO)
-
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "say wait!  I'm sure we can negotiate a fair price for your protection", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "say wait! I'm sure we can negotiate a fair price for your protection", default=NO)
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "I fire a shot into the air!", default=NO)
 assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "challenge him to a duel", default=NO)
 # assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "I challenge him to a duel.", default=NO)
@@ -42,6 +34,15 @@ assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire my gun 
 # assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "take aim at his head", default=NO)
 # assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "aim at the bandit", default=NO)
 # assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "aim at the bandits", default=NO)
+
+# In this game we will have killing animals be allowed, even though I personally am a big propent of animal sentience.
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the bear", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the bear", default=NO)
+# assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot it", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the wolf", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the wolf", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "fire at the wolves", default=NO)
+assert NO == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot the wolves", default=NO)
 
 assert YES == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "I shoot him", default=NO)
 assert YES == decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, "shoot him", default=NO)
