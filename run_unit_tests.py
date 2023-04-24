@@ -37,7 +37,7 @@ assert YES == decider_utils.special_case_is_action_lethal("I shoot him in the ch
 assert YES == decider_utils.special_case_is_action_lethal("I shoot him right in the heart")
 
 assert NO == decider_utils.special_case_is_action_lethal("say wait!  I'm sure we can negotiate a fair price for your protection")
-assert NO == decider_utils.special_case_is_action_lethal("say wait! I'm sure we can negotiate a fair price for your protection") # This version with only 1 space is frequently a false positive.
+assert NO == decider_utils.special_case_is_action_lethal("say wait! I'm sure we can negotiate a fair price for your protection")  # This version with only 1 space is frequently a false positive.
 assert NO == decider_utils.special_case_is_action_lethal("I fire a shot into the air!")
 assert NO == decider_utils.special_case_is_action_lethal("challenge him to a duel")
 assert NO == decider_utils.special_case_is_action_lethal("I challenge him to a duel.")
@@ -61,7 +61,7 @@ assert NO == decider_utils.special_case_is_action_lethal("aim at the bandits")
 # In this game we will have killing animals be allowed, even though I personally am a big propent of animal sentience.
 assert NO == decider_utils.special_case_is_action_lethal("fire at the bear")
 assert NO == decider_utils.special_case_is_action_lethal("shoot the bear")
-# assert NO == decider_utils.special_case_is_action_lethal("shoot it")
+# assert NO == decider_utils.special_case_is_action_lethal("shoot it")  # This test is failing
 assert NO == decider_utils.special_case_is_action_lethal("shoot the wolf")
 assert NO == decider_utils.special_case_is_action_lethal("fire at the wolf")
 assert NO == decider_utils.special_case_is_action_lethal("fire at the wolves")
@@ -70,7 +70,6 @@ assert NO == decider_utils.special_case_is_action_lethal("shoot the wolves")
 # This one is kind of a maybe.  I originally had a test asserting that it's NO, but the AI says YES and I think that's valid too.
 # assert NO == decider_utils.special_case_is_action_lethal("I fire a shot over his head")
 # assert YES == decider_utils.special_case_is_action_lethal("I fire a shot over his head")
-
 
 
 assert YES == decider_utils.special_case_is_magic("I fly straight up")

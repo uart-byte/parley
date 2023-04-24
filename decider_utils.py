@@ -140,7 +140,7 @@ def special_case_is_action_lethal(text):
         if keyword in text_l:
             is_negotiation = True
             break
-    
+
     if is_negotiation:
         return NO
 

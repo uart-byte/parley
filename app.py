@@ -167,7 +167,6 @@ with demo:
         space_filler_3 = gr.Markdown(value="")
         space_filler_4 = gr.Markdown(value="")
 
-
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False, visible=False)
     gr_pls_be_patient = gr.HTML(PLEASE_BE_PATIENT_DIV)
     gr_music_player = gr.HTML(MUSIC_PLAYER)
