@@ -133,19 +133,23 @@ def special_case_is_magic(text):
 
 
 def special_case_is_action_lethal(text):
+    text_l = text.lower()
+
+    is_negotiation = False
+    for keyword in ["say", "ask", "negotiat", "warn", "fair", "consider", "please", "family", "children", "challenge", "request", "inquire", "price", "gold", "coin", "away"]:
+        if keyword in text_l:
+            is_negotiation = True
+            break
     
-    # Each of these checks has some false positives, so I am layering them
+    if is_negotiation:
+        return NO
+
+    aiming_but_not_shooting = False
+    if ("aim" in text_l or "cock" in text_l or "pull" in text_l or "hammer" in text_l or "point" in text_l) and not ("shoot" in text_l or "fire" in text_l or "trigger" in text_l):
+        aiming_but_not_shooting = True
+
+    if aiming_but_not_shooting:
+        return NO
 
     bool1 = yesno(decider_questions.QUESTION_IS_ACTION_LIKELY_LETHAL, text, default=NO)
-     
-    if not bool1:
-        return False
-
-    bool2a = yesno(decider_questions.QUESTION_IS_GUN_DISCHARGED, text, default=NO)
-    bool2b = yesno(decider_questions.QUESTION_IS_GUN_FIRED, text, default=NO)
-    bool2 = bool2a or bool2b
-
-    if not bool2:
-        return False
-
-    return True
+    return bool1
