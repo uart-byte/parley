@@ -31,8 +31,8 @@ def elaborate(
             prompt=str_beginning,
             temperature=0.5,
             max_tokens=4000 - int(len(str_beginning) / 4),
-            frequency_penalty=0.5,
-            presence_penalty=0.5,
+            frequency_penalty=0.8,
+            presence_penalty=0.6,
             n=N_COMPLETIONS_WHEN_ELABORATING,
         )["choices"]
 
