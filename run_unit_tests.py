@@ -36,6 +36,7 @@ assert YES == decider_utils.special_case_is_action_lethal("I poison him with a l
 assert YES == decider_utils.special_case_is_action_lethal("I shoot him in the chest")
 assert YES == decider_utils.special_case_is_action_lethal("I shoot him right in the heart")
 
+assert NO == decider_utils.special_case_is_action_lethal("A")
 assert NO == decider_utils.special_case_is_action_lethal("say wait!  I'm sure we can negotiate a fair price for your protection")
 assert NO == decider_utils.special_case_is_action_lethal("say wait! I'm sure we can negotiate a fair price for your protection")  # This version with only 1 space is frequently a false positive.
 assert NO == decider_utils.special_case_is_action_lethal("I fire a shot into the air!")
