@@ -133,6 +133,9 @@ def special_case_is_magic(text):
 
 
 def special_case_is_action_lethal(text):
+    if len(text.strip()) <= 3:
+        return NO
+
     text_l = text.lower()
 
     is_negotiation = False
