@@ -18,7 +18,7 @@ TOP_OF_SCREEN_PADDING_DIV = """
 
 PLEASE_BE_PATIENT_DIV = """
 <div style="background-color: white; font-family: cursive; font-size: 19px; padding: 2px 17px;">
-After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.
+After clicking Run Next Turn, ⬆️  please be patient as it may take up to a minute for the game state to update.
 </div>
 """
 

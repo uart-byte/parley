@@ -160,7 +160,7 @@ with demo:
     gr_narr_transcript = gr.Textbox(label="", value="", interactive=False, max_lines=9999, visible=False)
     gr_user_transcript = gr.Textbox(label="", value=INITIAL_WELCOME_TEXT, interactive=False, max_lines=9999, elem_classes="parleygame")
 
-    gr_user_input = gr.Textbox(label="Input:", value="", placeholder="Describe your next action here...", interactive=True)
+    gr_user_input = gr.Textbox(label="Input:                          ⬇️", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
 
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False, visible=False)
