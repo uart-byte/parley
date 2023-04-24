@@ -166,7 +166,7 @@ with demo:
 
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False)
 
-    gr_music_player = gr.HTML('<iframe width="300" height="20" src="https://www.youtube.com/embed/ez9Sn7aM2ds?start=19" title="Music of the Himalayas" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>')
+    gr_music_player = gr.HTML('<iframe width="1" height="1" src="https://www.youtube.com/embed/ez9Sn7aM2ds?start=19&autoplay=1" title="Music of the Himalayas" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>')
 
     gr_button1.click(
         fn=run_1_game_turn, inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input], outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input]
