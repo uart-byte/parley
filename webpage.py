@@ -2,7 +2,7 @@ PAGE_STYLING_JS = """
 async () => {
     document.head.insertAdjacentHTML("beforeend", `<style>
         body {
-            background-image: url("https://storage.cloud.google.com/public-file-hosting/ScrollBg11.jpg");
+            background-image: url("https://storage.googleapis.com/public-file-hosting/ScrollBg11.jpg");
             background-size: cover;
             filter: brightness(0.45) sepia(0.7) contrast(2) brightness(2) saturate(0.1);
             opacity: 70%;
@@ -26,6 +26,6 @@ After clicking ⬆️ Run Next Turn, please be patient as it may take up to 90 s
 MUSIC_PLAYER = """
 <div style="background-color: white; font-family: cursive; font-size: 19px; margin-top: 60px; padding: 2px 17px;">
 Optional:  Click player below to play Nepali music that goes with this game.
-<audio controls src="https://storage.cloud.google.com/public-file-hosting/NepaliFolkMusic.mp3"></audio>
+<audio controls src="https://storage.googleapis.com/public-file-hosting/NepaliFolkMusic.mp3"></audio>
 </div>
 """
