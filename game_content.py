@@ -441,9 +441,9 @@ To play again, please refresh the page.
 
 def game_over_fail_txt(s_reason):
     return f"""//################################################################################################//
-##  {S_GAME_OVER}.                                                                                    &&
+##  {S_GAME_OVER}.                                                                                                                                                                                                              &&
 ##  {s_reason}
-##  YOU LOSE.                                                                                     &&
+##  YOU LOSE.                                                                                                                                                                                                                  &&
 //################################################################################################//
 
 To play again, please refresh the page.
