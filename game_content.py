@@ -406,10 +406,18 @@ ATTEMPTS TO REACH HOME MUST ALWAYS BE FOILED BY GETTING LOST, ENCOUNTERING DANGE
 
 """
 
-NOTES_TO_THE_NARRATOR_EVERY_TIME = """
 
-What happens in JUST THE NEXT THREE SECONDS?
+NOTES_TO_THE_NARRATOR_EVERY_TIME_AT_FIRST = """
+
+What happens in JUST THE NEXT THREE SECONDS?  Please keep accurate count of their diminishing number of coins.
 """
+
+
+NOTES_TO_THE_NARRATOR_EVERY_TIME_IN_ENDGAME = """
+
+What happens next?  Maybe the player makes it home safely to their family.
+"""
+
 
 AWAITING_INPUT = """Awaiting user input:
 """

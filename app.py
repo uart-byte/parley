@@ -3,10 +3,19 @@
 import os, random
 import openai
 import gradio as gr
-from game_content import INITIAL_WELCOME_TEXT
-from game_content import GAME_INTRO_CHOICES, NOTES_TO_THE_NARRATOR_AT_START, AWAITING_INPUT, NOTES_TO_THE_NARRATOR_EVERY_TIME
-from game_content import game_over_victory_txt, game_over_fail_txt, S_GAME_OVER
-from game_content import N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER, N_TURNS_REQUIRED_TO_REACH_HOME
+from game_content import (
+    INITIAL_WELCOME_TEXT,
+    GAME_INTRO_CHOICES,
+    NOTES_TO_THE_NARRATOR_AT_START,
+    AWAITING_INPUT,
+    NOTES_TO_THE_NARRATOR_EVERY_TIME_AT_FIRST,
+    NOTES_TO_THE_NARRATOR_EVERY_TIME_IN_ENDGAME,
+    game_over_victory_txt,
+    game_over_fail_txt,
+    S_GAME_OVER,
+    N_TURNS_REQUIRED_TO_PASS_FIRST_BANDIT_ENCOUNTER,
+    N_TURNS_REQUIRED_TO_REACH_HOME,
+)
 import decider_utils
 from decider_utils import YES, NO
 from decider_questions import *  # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
@@ -93,7 +102,11 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
         n_turns_elapsed += 1
         s_user_transcript += s_user_input + "\n"
         s_narr_transcript += s_user_input + "\n"
-        s_narr_transcript += NOTES_TO_THE_NARRATOR_EVERY_TIME
+
+        if n_turns_elapsed < AFTER_N_TURNS_MAKE_IT_EASY_TO_WIN:
+            s_narr_transcript += NOTES_TO_THE_NARRATOR_EVERY_TIME_AT_FIRST
+        else:
+            s_narr_transcript += NOTES_TO_THE_NARRATOR_EVERY_TIME_IN_ENDGAME
 
         s_new_narr_transcript = elaborate(
             s_narr_transcript,

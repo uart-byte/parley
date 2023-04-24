@@ -6,6 +6,7 @@ NO = False
 
 g_decider_utils_dbg_printing = False
 
+
 def yesno(question, text, default):
     global g_decider_utils_dbg_printing
 
@@ -58,9 +59,10 @@ def special_case_is_running_away(text):
     else:
         return NO
 
+
 def special_case_is_magic(text):
     is_magic = False
-    for keyword in ["magic", "spell", "fly", "invisib", "levitat", "teleport", "dragon", "genie", "fairy", "demon", "devil", "angel", "griffin", "wand"]:
+    for keyword in ["magic", "spell", "fly", "invisib", "levitat", "shapeshift", "morph", "shrink", "transform", "teleport", "dragon", "genie", "fairy", "demon", "devil", "angel", "griffin", "wand"]:
         if keyword in text.lower():
             is_magic = True
             break
@@ -69,4 +71,3 @@ def special_case_is_magic(text):
         return YES
     else:
         return yesno(decider_questions.QUESTION_IS_ACTION_MAGIC, text, default=NO)
-
