@@ -165,7 +165,7 @@ with demo:
     gr_user_input = gr.Textbox(label="", value="", placeholder="Describe your next action here...", interactive=True)
     gr_button1 = gr.Button(value="Run Next Turn")
 
-    gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False)
+    gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False, visible=False)
 
     gr_music_player = gr.HTML(MUSIC_PLAYER)
 
