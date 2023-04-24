@@ -21,3 +21,11 @@ PLEASE_BE_PATIENT_DIV = """
 After clicking Run Next Turn, please be patient as it may take up to a minute for the game state to update.
 </div>
 """
+
+
+MUSIC_PLAYER = """
+<div style="background-color: white; font-family: cursive; font-size: 19px; padding: 2px 17px;">
+Optional:  Click player below to play Nepali music.
+<audio controls src="https://storage.cloud.google.com/public-file-hosting/NepaliFolkMusic.mp3"></audio>
+</div>
+"""

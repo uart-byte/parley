@@ -19,7 +19,7 @@ from game_content import (
 import decider_utils
 from decider_utils import YES, NO
 from decider_questions import *  # QUESTION_IS_USER_HOME, QUESTION_IS_USER_ENGAGED_WITH_BANDITS, etc.
-from webpage import PAGE_STYLING_JS, PLEASE_BE_PATIENT_DIV, TOP_OF_SCREEN_PADDING_DIV
+from webpage import PAGE_STYLING_JS, PLEASE_BE_PATIENT_DIV, TOP_OF_SCREEN_PADDING_DIV, MUSIC_PLAYER
 
 
 N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that made the program very slow.
@@ -166,7 +166,7 @@ with demo:
 
     gr_n_turns_elapsed = gr.Textbox(label="N Turns Elapsed", value="0", interactive=False)
 
-    gr_music_player = gr.HTML('<iframe width="1" height="1" src="https://www.youtube.com/embed/ez9Sn7aM2ds?start=19&autoplay=1" title="Music of the Himalayas" frameborder="0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>')
+    gr_music_player = gr.HTML(MUSIC_PLAYER)
 
     gr_button1.click(
         fn=run_1_game_turn, inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input], outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input]
