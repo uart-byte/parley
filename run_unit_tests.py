@@ -11,7 +11,6 @@ from decider_utils import YES, NO, yesno, special_case_is_running_away
 from decider_questions import *
 
 
-
 assert YES == special_case_is_running_away("run away")
 assert YES == special_case_is_running_away("I run away")
 assert YES == special_case_is_running_away("flee")
@@ -23,4 +22,3 @@ assert NO == special_case_is_running_away("C")
 assert NO == special_case_is_running_away("ok")
 assert NO == special_case_is_running_away("say ok")
 assert NO == special_case_is_running_away("say okay")
-

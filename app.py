@@ -73,7 +73,6 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
         s_narr_transcript = game_intro + NOTES_TO_THE_NARRATOR_AT_START
         s_user_transcript = game_intro
 
-
     elif s_user_input == "":
         s_user_transcript += "You must choose an action.\n"
 
@@ -83,8 +82,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
-    elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) \
-    and decider_utils.special_case_is_running_away(s_user_input):
+    elif decider_utils.yesno(QUESTION_IS_USER_ENGAGED_WITH_BANDITS, s_narr_transcript, default=NO) and decider_utils.special_case_is_running_away(s_user_input):
         finally_add2_both_tscripts += "Invalid entry.  You cannot outrun these bandits.\n"
 
     elif decider_utils.yesno(QUESTION_IS_ACTION_MAGIC, s_user_input, default=NO):

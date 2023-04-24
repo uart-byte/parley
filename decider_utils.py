@@ -36,6 +36,7 @@ def yesno(question, text, default):
 # In certain cases, I need more special-case logic in order to behave correctly,
 # which we verify using the unit tests in run_unit_tests.py:
 
+
 def special_case_is_running_away(text):
     might_really_be_fleeing = False
     for keyword in ["run", "away", "hide", "escape", "flee", "sprint", "teleport"]:
