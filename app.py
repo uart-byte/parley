@@ -89,7 +89,7 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     elif S_GAME_OVER in s_narr_transcript:
         s_user_transcript += "Sorry, the game is already over.  To play again, please refresh the page.\n"
 
-    elif decider_utils.yesno(QUESTION_IS_ACTION_LIKELY_LETHAL, s_user_input, default=NO):
+    elif decider_utils.special_case_is_action_lethal(s_user_input):
         finally_add2_both_tscripts += s_user_input + "\n\n"
         finally_add2_both_tscripts += game_over_fail_txt("You have taken an action that is likely to result in killing someone.")
 
