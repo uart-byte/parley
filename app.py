@@ -27,9 +27,8 @@ N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that m
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
 
 
-openai_client = OpenAI()
-openai_client.organization = os.environ.get("OPENAI_ORGANIZATION")
-openai_client.api_key = os.environ.get("OPENAI_KEY")
+openai_client = OpenAI(organization=os.environ.get("OPENAI_ORGANIZATION"),
+    api_key=os.environ.get("OPENAI_KEY"))
 
 
 def elaborate(

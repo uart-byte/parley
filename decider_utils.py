@@ -7,9 +7,8 @@ NO = False
 
 g_decider_utils_dbg_printing = False
 
-openai_client = OpenAI()
-openai_client.organization = os.environ.get("OPENAI_ORGANIZATION")
-openai_client.api_key = os.environ.get("OPENAI_KEY")
+openai_client = OpenAI(organization=os.environ.get("OPENAI_ORGANIZATION"),
+    api_key=os.environ.get("OPENAI_KEY"))
 
 
 def yesno(question, text, default):
