@@ -1,7 +1,7 @@
 # formatted with python black, line length 200
 
 import os, random
-import openai
+from openai import OpenAI
 import gradio as gr
 from game_content import (
     INITIAL_WELCOME_TEXT,
@@ -27,27 +27,33 @@ N_COMPLETIONS_WHEN_ELABORATING = 1  # I previously had this set to 3, but that m
 MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING = 7
 
 
+openai_client = OpenAI()
+openai_client.organization = os.environ.get("OPENAI_ORGANIZATION")
+openai_client.api_key = os.environ.get("OPENAI_KEY")
+
+
 def elaborate(
     str_beginning,
     prevent_user_from_reaching_home=True,
     require_user_to_be_still_engaged_with_bandits=False,
 ):
+    global openai_client
 
     longest_completion = ""
 
     while len(longest_completion) < MINIMUM_COMPLETION_LENGTH_CHARS_WHEN_ELABORATING:
-        completions = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=str_beginning,
+        completions = openai_client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[{"role": "system", "content": "Continue the story that begins in the next message."}, {"role": "assistant", "content": str_beginning}],
             temperature=0.5,
             max_tokens=4000 - int(len(str_beginning) / 4),
             frequency_penalty=0.8,
             presence_penalty=0.6,
             n=N_COMPLETIONS_WHEN_ELABORATING,
-        )["choices"]
+        ).choices
 
         for i in range(0, N_COMPLETIONS_WHEN_ELABORATING):
-            completion = completions[i]["text"]
+            completion = completions[i].message.content
             # debug_print(completion)
 
             allowed = True
@@ -149,9 +155,6 @@ def run_1_game_turn(s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_u
     return [s_narr_transcript, s_n_turns_elapsed, s_user_transcript, s_user_input]
 
 
-openai.organization = os.environ.get("OPENAI_ORGANIZATION")
-openai.api_key = os.environ.get("OPENAI_KEY")
-
 
 demo = gr.Blocks()
 
@@ -176,8 +179,8 @@ with demo:
         fn=run_1_game_turn, inputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input], outputs=[gr_narr_transcript, gr_n_turns_elapsed, gr_user_transcript, gr_user_input]
     )
 
-    # See https://discuss.huggingface.co/t/gradio-html-component-with-javascript-code-dont-work/37316/2
-    demo.load(None, None, None, _js=PAGE_STYLING_JS)
+    
+    demo.load(None, None, None, js=PAGE_STYLING_JS)
 
 
 demo.launch()

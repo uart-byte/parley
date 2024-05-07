@@ -1,4 +1,5 @@
-import openai
+import os
+from openai import OpenAI
 import decider_questions
 
 YES = True
@@ -6,24 +7,29 @@ NO = False
 
 g_decider_utils_dbg_printing = False
 
+openai_client = OpenAI()
+openai_client.organization = os.environ.get("OPENAI_ORGANIZATION")
+openai_client.api_key = os.environ.get("OPENAI_KEY")
+
 
 def yesno(question, text, default):
     global g_decider_utils_dbg_printing
+    global openai_client
 
     prompt = text + "\n\n" + question
 
     if g_decider_utils_dbg_printing:
         print(prompt)
 
-    hopefully_word_yes_or_no = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=prompt,
+    hopefully_word_yes_or_no = openai_client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": prompt}],
         temperature=0,
-        max_tokens=20,  # At first I tried max_tokens = 1 or 2,  but the davinci-002 model produced zero output (immediate stop) unless I increased max_token to around 20
+        max_tokens=20,  # A while ago when testing with gpt-4-turbo, at first I tried max_tokens = 1 or 2,  but the davinci-002 model produced zero output (immediate stop) unless I increased max_token to around 20
         frequency_penalty=0,
         presence_penalty=0,
         n=1,
-    )["choices"][0]["text"]
+    ).choices[0].message.content
 
     if g_decider_utils_dbg_printing:
         print(hopefully_word_yes_or_no)
@@ -45,21 +51,22 @@ def yesno(question, text, default):
 
 def number(question, text, default=-1, maximum=6):
     global g_decider_utils_dbg_printing
+    global openai_client
 
     prompt = text + "\n\n" + question
 
     if g_decider_utils_dbg_printing:
         print(prompt)
 
-    hopefully_number = openai.Completion.create(
-        engine="text-davinci-002",
-        prompt=prompt,
+    hopefully_number = openai_client.chat.completions.create(
+        model="gpt-4-turbo",
+        messages=[{"role": "system", "content": prompt}],
         temperature=0,
-        max_tokens=20,  # At first I tried max_tokens = 1 or 2,  but the davinci-002 model produced zero output (immediate stop) unless I increased max_token to around 20
+        max_tokens=20,  # A while ago when testing with gpt-4-turbo, at first I tried max_tokens = 1 or 2,  but the davinci-002 model produced zero output (immediate stop) unless I increased max_token to around 20
         frequency_penalty=0,
         presence_penalty=0,
         n=1,
-    )["choices"][0]["text"]
+    ).choices[0].message.content
 
     if g_decider_utils_dbg_printing:
         print(hopefully_number)
